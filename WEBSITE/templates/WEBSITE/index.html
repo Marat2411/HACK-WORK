@@ -789,11 +789,7 @@
         // Обработчики для кнопок "Подробнее"
         document.querySelectorAll('.order-button').forEach(button => {
             button.addEventListener('click', function() {
-                const card = this.closest('.order-card');
-                const title = card.querySelector('.order-title').textContent;
-                
-                alert(`Подробная информация о заказе:\n\n"${title}"\n\nФункционал в разработке.`);
-                console.log(`Открываем детали заказа: "${title}"`);
+                window.location.href = '/order/';
             });
         });
 
