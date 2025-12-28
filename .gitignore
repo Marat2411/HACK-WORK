@@ -1,0 +1,19 @@
+Django
+*.log
+*.pot
+*.pyc
+pycache/
+db.sqlite3
+
+Virtual environment
+venv/
+
+Environment variables
+.env
+
+IDE
+.vscode/
+.idea/
+
+Docker
+data/

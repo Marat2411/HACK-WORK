@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Халтурка.ру</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #FAFAFA;
+            color: #333333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Шапка - ОБНОВЛЕН ТОЛЬКО АДАПТИВ */
+        .header {
+            background-color: #FAFAFA;
+            padding: 1rem 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+            border-bottom: 1px solid #EEEEEE;
+            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform: translateY(0);
+        }
+
+        .header.hidden {
+            transform: translateY(-100%);
+        }
+
+        .header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #FF8C00;
+            text-decoration: none;
+        }
+
+        .main-nav {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-link {
+            color: #333333;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 0;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+            position: relative;
+            background-color: transparent !important;
+            width: 130px;
+            height: 45px;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .nav-text {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            transform-origin: center;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 3px;
+            background: linear-gradient(135deg, #FFD166, #FFA94D);
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .nav-link:hover .nav-text,
+        .nav-link.active .nav-text {
+            transform: scale(1.1);
+        }
+
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 90%;
+        }
+
+        .nav-link.active {
+            font-weight: 700;
+        }
+
+        /* Мобильная кнопка меню */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #FF8C00;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        /* Основной контент */
+        .main-content {
+            padding: 5rem 0 3rem;
+            flex: 1;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 1.5rem;
+            color: #333333;
+            font-weight: 800;
+        }
+
+        .page-description {
+            color: #666666;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #EEEEEE;
+            font-size: 1.2rem;
+        }
+
+        /* Кнопка добавить заказ */
+        .add-order-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 2.5rem;
+        }
+
+        .add-order-btn {
+            background: linear-gradient(135deg, #7ED957, #A8E6CF);
+            color: #2E7D32;
+            border: none;
+            padding: 0.9rem 2.2rem;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(126, 217, 87, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            line-height: 1;
+        }
+
+        .add-order-btn i {
+            font-size: 1.2rem;
+            margin-top: 0;
+            vertical-align: middle;
+        }
+
+        .add-order-btn span {
+            vertical-align: middle;
+        }
+
+        .add-order-btn:hover {
+            background: linear-gradient(135deg, #5ECF4D, #97D9B4);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(94, 207, 77, 0.4);
+            color: #1B5E20;
+        }
+
+        /* Сетка заказов */
+        .orders-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        /* Карточка заказа */
+        .order-card {
+            background: #FFFFFF;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            transition: all 0.3s ease;
+            border: 1px solid #EEEEEE;
+            height: 200px;
+            align-items: stretch;
+            position: relative;
+        }
+
+        .order-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            border-color: #FFD166;
+        }
+
+        /* СТИЛИ ДЛЯ КАРТОЧКИ В ТОПЕ - ПРОСТОЙ И СТИЛЬНЫЙ */
+        .featured-card {
+            background: linear-gradient(135deg, #FFF9E6, #FFFFFF);
+            border: 2px solid #FF9800;
+            box-shadow: 0 4px 20px rgba(255, 152, 0, 0.15);
+            position: relative;
+        }
+
+        .featured-card:hover {
+            box-shadow: 0 8px 30px rgba(255, 152, 0, 0.25);
+            border-color: #FF8C00;
+        }
+
+        /* Бейдж "В ТОПЕ" - слева от кнопки */
+        .featured-badge {
+            position: absolute;
+            bottom: 20px;
+            left: 400px; /* Позиция слева от кнопки */
+            background: linear-gradient(135deg, #FF9800, #FF5722);
+            color: white;
+            font-weight: 800;
+            font-size: 0.85rem;
+            padding: 6px 14px;
+            border-radius: 20px;
+            z-index: 2;
+            box-shadow: 0 3px 10px rgba(255, 87, 34, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .featured-card .order-title {
+            color: #E65100;
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .featured-card .order-title::before {
+            content: '🔥';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+        }
+
+        .featured-card .order-button {
+            background: linear-gradient(135deg, #FF9800, #FF5722);
+            color: white;
+            box-shadow: 0 3px 10px rgba(255, 87, 34, 0.3);
+        }
+
+        .featured-card .order-button:hover {
+            background: linear-gradient(135deg, #FF8C00, #F4511E);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 87, 34, 0.4);
+        }
+
+        .order-image {
+            flex: 0 0 200px;
+            overflow: hidden;
+            background-color: #F5F5F5;
+        }
+
+        .order-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .order-card:hover .order-image img {
+            transform: scale(1.05);
+        }
+
+        .order-details {
+            flex: 1;
+            padding: 1.5rem;
+            display: grid;
+            grid-template-rows: auto auto 1fr auto;
+            gap: 0.8rem;
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .order-title {
+            font-size: 1.4rem;
+            color: #333333;
+            font-weight: 700;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 70%;
+        }
+
+        .order-date {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #777777;
+            font-size: 0.9rem;
+            font-weight: 600;
+            white-space: nowrap;
+            margin-left: 1rem;
+        }
+
+        .order-date i {
+            color: #FFA94D;
+            font-size: 0.9rem;
+        }
+
+        .order-description {
+            color: #555555;
+            line-height: 1.6;
+            font-size: 1rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-height: 4.8em;
+        }
+
+        .order-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            position: relative;
+        }
+
+        .order-meta {
+            display: flex;
+            gap: 1.5rem;
+            color: #777777;
+            font-size: 0.95rem;
+            flex-wrap: wrap;
+        }
+
+        .order-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .order-meta i {
+            color: #FFA94D;
+            font-size: 1rem;
+        }
+
+        .featured-card .order-meta span:nth-child(2) {
+            color: #E65100;
+            font-weight: 700;
+            font-size: 1.05rem;
+        }
+
+        .featured-card .order-meta span:nth-child(2) i {
+            color: #FF5722;
+        }
+
+        .order-button {
+            background: linear-gradient(135deg, #FFD166, #FFA94D);
+            color: #333333;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(255, 166, 0, 0.3);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .order-button:hover {
+            background: linear-gradient(135deg, #FFC043, #FF8C00);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 166, 0, 0.4);
+        }
+
+        /* Подвал */
+        .footer {
+            background-color: #FAFAFA;
+            color: #333333;
+            padding: 3rem 0;
+            margin-top: auto;
+            text-align: center;
+            border-top: 1px solid #EEEEEE;
+        }
+
+        .footer .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .footer p {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .footer-email {
+            font-size: 1.2rem;
+            color: #FF8C00;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .footer-email:hover {
+            color: #FF8C00;
+            transform: translateY(-2px);
+        }
+
+        .footer-email i {
+            font-size: 1.4rem;
+        }
+
+        /* АДАПТИВНОСТЬ КАК В JG.HTML */
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .main-nav {
+                position: fixed;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background: #FAFAFA;
+                flex-direction: column;
+                padding: 20px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+                transform: translateY(-150%);
+                transition: transform 0.3s;
+                z-index: 999;
+                gap: 0;
+            }
+            
+            .main-nav.active {
+                transform: translateY(0);
+            }
+            
+            .nav-link {
+                padding: 12px 0;
+                justify-content: center;
+                width: 100%;
+                height: auto;
+                border-bottom: 1px solid #EEEEEE;
+            }
+            
+            .nav-link:last-child {
+                border-bottom: none;
+            }
+            
+            .nav-text {
+                justify-content: center;
+            }
+            
+            .order-card {
+                flex-direction: column;
+                height: auto;
+                min-height: 350px;
+            }
+            
+            .featured-badge {
+                position: static;
+                margin-bottom: 10px;
+                align-self: flex-start;
+                margin-left: 1.5rem;
+            }
+            
+            .order-image {
+                flex: 0 0 150px;
+                width: 100%;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .logo {
+                font-size: 1.6rem;
+            }
+            
+            .main-content {
+                padding: 6rem 0 2rem;
+            }
+            
+            .orders-grid {
+                gap: 1.2rem;
+            }
+            
+            .order-header {
+                flex-direction: column;
+                align-items: flex-start;
+                margin-bottom: 0.5rem;
+            }
+            
+            .order-title {
+                max-width: 100%;
+                white-space: normal;
+                margin-bottom: 0.3rem;
+            }
+            
+            .featured-card .order-title {
+                padding-left: 25px;
+            }
+            
+            .order-date {
+                margin-left: 0;
+                margin-top: 0.3rem;
+            }
+            
+            .order-footer {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+                margin-top: 0.5rem;
+            }
+            
+            .order-button {
+                align-self: flex-start;
+            }
+            
+            .footer-email {
+                font-size: 1rem;
+            }
+            
+            .order-details {
+                display: flex;
+                flex-direction: column;
+                gap: 0.8rem;
+            }
+            
+            .order-description {
+                -webkit-line-clamp: 2;
+                max-height: 3.2em;
+            }
+            
+            .add-order-btn {
+                width: 100%;
+                justify-content: center;
+                padding: 0.8rem 1.5rem;
+            }
+            
+            .add-order-container {
+                justify-content: center;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .order-card {
+                min-height: 320px;
+            }
+            
+            .order-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .nav-link {
+                font-size: 1rem;
+            }
+            
+            .featured-card .order-title::before {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Шапка -->
+    <header class="header" id="mainHeader">
+        <div class="container">
+            <a href="/" class="logo">
+                Халтурка.ру
+            </a>
+            
+            <!-- Кнопка мобильного меню -->
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <!-- Навигация -->
+            <nav class="main-nav" id="mainNav">
+                <a href="/" class="nav-link active">
+                    <span class="nav-text">
+                        <i class="fas fa-home"></i> Главная
+                    </span>
+                </a>
+                <a href="#" class="nav-link">
+                    <span class="nav-text">
+                        <i class="fas fa-wallet"></i> Баланс
+                    </span>
+                </a>
+                <a href="/auth/" class="nav-link">
+                    <span class="nav-text">
+                        <i class="fas fa-sign-in-alt"></i> Войти
+                    </span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Основной контент -->
+    <main class="container main-content">
+        <h1>Свежие заказы</h1>
+        <p class="page-description">Выбирайте задание по душе и начинайте зарабатывать прямо сейчас!</p>
+        
+        <!-- Кнопка добавить заказ -->
+        <div class="add-order-container">
+            <button class="add-order-btn" id="addOrderBtn">
+                <i class="fas fa-plus"></i> <span>Добавить заказ</span>
+            </button>
+        </div>
+
+        <!-- Сетка заказов -->
+        <div class="orders-grid">
+
+            <!-- Заказ 1 - В ТОПЕ! -->
+            <div class="order-card featured-card">
+                <div class="order-image">
+                    <img src="https://avatars.mds.yandex.net/i?id=d022000450f8d25125fa4ffc562e2715_l-5487767-images-thumbs&n=13" alt="Ремонт техники">
+                </div>
+                <div class="order-details">
+                    <div class="order-header">
+                        <h3 class="order-title">Ремонт ноутбука</h3>
+                        <div class="order-date">
+                            <i class="far fa-calendar-alt"></i> Сегодня, 10:30
+                        </div>
+                    </div>
+                    <p class="order-description">
+                        Замена матрицы на ноутбуке ASUS, диагностика. Срочно нужно сделать сегодня! Ноутбук не включается после падения. Нужен опытный специалист.
+                    </p>
+                    <div class="order-footer">
+                        <div class="order-meta">
+                            <span><i class="fas fa-tag"></i> Ремонт техники</span>
+                            <span><i class="fas fa-ruble-sign"></i> 3 500 ₽</span>
+                            <span><i class="fas fa-map-marker-alt"></i> Москва, Центр</span>
+                        </div>
+                        <div class="featured-badge">
+                            <i class="fas fa-fire"></i> В ТОПЕ
+                        </div>
+                        <button class="order-button">Подробнее</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Заказ 2 -->
+            <div class="order-card">
+                <div class="order-image">
+                    <img src="https://images.steamusercontent.com/ugc/1788468838055780980/3476813565234AF06DC1167A729BFAD5BFC9E952/?imw=512&amp;&amp;ima=fit&amp;impolicy=Letterbox&amp;imcolor=%23000000&amp;letterbox=false" alt="Дизайн сайта">
+                </div>
+                <div class="order-details">
+                    <div class="order-header">
+                        <h3 class="order-title">Дизайн сайта для пекарни</h3>
+                        <div class="order-date">
+                            <i class="far fa-calendar-alt"></i> 12.12.2023, 14:15
+                        </div>
+                    </div>
+                    <p class="order-description">
+                        Создать дизайн главной страницы и каталога для сайта пекарни "Сдобная". Нужно разработать 3 варианта дизайна на выбор. Требуется современный, теплый дизайн в пастельных тонах.
+                    </p>
+                    <div class="order-footer">
+                        <div class="order-meta">
+                            <span><i class="fas fa-tag"></i> Дизайн</span>
+                            <span><i class="fas fa-ruble-sign"></i> 15 000 ₽</span>
+                            <span><i class="fas fa-map-marker-alt"></i> Санкт-Петербург, Центр</span>
+                        </div>
+                        <button class="order-button">Подробнее</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Заказ 3 -->
+            <div class="order-card">
+                <div class="order-image">
+                    <img src="https://images.steamusercontent.com/ugc/2000192243359213979/31D2B2F50BFA75A86F49ACD1E21FC448E45A45D9/?imw=512&imh=556&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true" alt="Перевозка">
+                </div>
+                <div class="order-details">
+                    <div class="order-header">
+                        <h3 class="order-title">Перевозка мебели</h3>
+                        <div class="order-date">
+                            <i class="far fa-calendar-alt"></i> 10.12.2023, 09:45
+                        </div>
+                    </div>
+                    <p class="order-description">
+                        Перевезти диван и два кресла. Требуется грузчики и газель. Этаж 3/5. Нужно аккуратно разобрать диван, перевезти и собрать на новом месте.
+                    </p>
+                    <div class="order-footer">
+                        <div class="order-meta">
+                            <span><i class="fas fa-tag"></i> Грузоперевозки</span>
+                            <span><i class="fas fa-ruble-sign"></i> 4 500 ₽</span>
+                            <span><i class="fas fa-map-marker-alt"></i> Екатеринбург, Верх-Исетский р-н</span>
+                        </div>
+                        <button class="order-button">Подробнее</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Подвал -->
+    <footer class="footer">
+        <div class="container">
+            <p>© 2025 Халтурка.ру - площадка для заказов и услуг</p>
+            <a href="mailto:example@mail.ru" class="footer-email">
+                <i class="fas fa-envelope"></i> example@mail.ru
+            </a>
+        </div>
+    </footer>
+
+    <script>
+        // Скрипт для автоматического скрытия/показа шапки при прокрутке
+        let lastScrollTop = 0;
+        const header = document.getElementById('mainHeader');
+        const scrollThreshold = 60;
+        
+        window.addEventListener('scroll', function() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            if (scrollTop > lastScrollTop && scrollTop > scrollThreshold) {
+                header.classList.add('hidden');
+            } 
+            else if (scrollTop < lastScrollTop) {
+                header.classList.remove('hidden');
+            }
+            
+            lastScrollTop = scrollTop;
+        });
+
+        // Мобильное меню (как в jg.html)
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mainNav = document.getElementById('mainNav');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            mainNav.classList.toggle('active');
+            mobileMenuBtn.innerHTML = mainNav.classList.contains('active') 
+                ? '<i class="fas fa-times"></i>' 
+                : '<i class="fas fa-bars"></i>';
+        });
+        
+        // Закрыть мобильное меню при клике на ссылку
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                mainNav.classList.remove('active');
+                mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+            });
+        });
+
+        // Обработчики для кнопок "Подробнее"
+        document.querySelectorAll('.order-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const card = this.closest('.order-card');
+                const title = card.querySelector('.order-title').textContent;
+                
+                alert(`Подробная информация о заказе:\n\n"${title}"\n\nФункционал в разработке.`);
+                console.log(`Открываем детали заказа: "${title}"`);
+            });
+        });
+
+        // Обработчик для кнопки "Добавить заказ"
+        document.getElementById('addOrderBtn').addEventListener('click', function() {
+            window.location.href = '/add_order/';
+        });
+    </script>
+
+</body>
+</html>
