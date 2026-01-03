@@ -23,3 +23,13 @@ def registr_view(request):
 
 def add_order_view(request):
     return render(request, 'WEBSITE/add_order.html')
+
+# Новые представления
+def privacy_view(request):
+    return render(request, 'WEBSITE/privacy.html')
+
+def personal_data_view(request):
+    return render(request, 'WEBSITE/personal_data.html')
+
+def offer_view(request):
+    return render(request, 'WEBSITE/offer.html')
