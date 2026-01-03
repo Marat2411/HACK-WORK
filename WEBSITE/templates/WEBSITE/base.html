@@ -29,11 +29,13 @@
                         <i class="fas fa-home"></i> Главная
                     </span>
                 </a>
-                <a href="#" class="nav-link">
-                    <span class="nav-text">
-                        <i class="fas fa-wallet"></i> Баланс
-                    </span>
-                </a>
+                {% if '/personal_account/' in request.path %}
+                    <a href="#" class="nav-link">
+                        <span class="nav-text">
+                            <i class="fas fa-wallet"></i> Баланс
+                        </span>
+                    </a>
+                {% endif %}
                 {% if user.is_authenticated %}
                     <a href="{% url 'personal_account_view' %}" class="nav-link {% if '/personal_account/' in request.path %}active{% endif %}">
                         <span class="nav-text">
