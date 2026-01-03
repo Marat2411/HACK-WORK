@@ -1,757 +1,133 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Добавить заказ | Халтурка.ру</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+{% extends "WEBSITE/base.html" %}
+{% load static %}
 
-        body {
-            background-color: #FAFAFA;
-            color: #333333;
-            line-height: 1.6;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+{% block title %}Добавить заказ | Халтурка.ру{% endblock %}
 
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'WEBSITE/css/add_order.css' %}">
+{% endblock %}
 
-        /* Шапка - ОБНОВЛЕНА КАК В INDEX.HTML */
-        .header {
-            background-color: #FAFAFA;
-            padding: 1rem 0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
-            border-bottom: 1px solid #EEEEEE;
-            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            transform: translateY(0);
-        }
+{% block content %}
+<h1>Добавить новый заказ</h1>
+<p class="page-description">Заполните информацию о вашем задании, чтобы найти исполнителя</p>
 
-        .header.hidden {
-            transform: translateY(-100%);
-        }
-
-        .header .container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #FF8C00;
-            text-decoration: none;
-        }
-
-        .main-nav {
-            display: flex;
-            gap: 1.5rem;
-        }
-
-        .nav-link {
-            color: #333333;
-            text-decoration: none;
-            font-weight: 600;
-            padding: 0.5rem 1rem;
-            border-radius: 0;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 1rem;
-            position: relative;
-            background-color: transparent !important;
-            width: 130px;
-            height: 45px;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .nav-text {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-            transform-origin: center;
-        }
-
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 3px;
-            background: linear-gradient(135deg, #FFD166, #FFA94D);
-            transition: width 0.3s ease;
-            border-radius: 2px;
-        }
-
-        .nav-link:hover .nav-text,
-        .nav-link.active .nav-text {
-            transform: scale(1.1);
-        }
-
-        .nav-link:hover::after,
-        .nav-link.active::after {
-            width: 90%;
-        }
-
-        .nav-link.active {
-            font-weight: 700;
-        }
-
-        /* Мобильная кнопка меню - ДОБАВЛЕНО КАК В INDEX.HTML */
-        .mobile-menu-btn {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 24px;
-            color: #FF8C00;
-            cursor: pointer;
-            padding: 5px;
-        }
-
-        /* Основной контент */
-        .main-content {
-            padding: 5rem 0 3rem;
-            flex: 1;
-        }
-
-        h1 {
-            font-size: 2.8rem;
-            margin-bottom: 1.5rem;
-            color: #333333;
-            font-weight: 800;
-        }
-
-        .page-description {
-            color: #666666;
-            margin-bottom: 2rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid #EEEEEE;
-            font-size: 1.2rem;
-        }
-
-        /* Форма добавления заказа */
-        .add-order-form {
-            background: #FFFFFF;
-            border-radius: 12px;
-            padding: 2.5rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            border: 1px solid #EEEEEE;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        .form-group {
-            margin-bottom: 1.8rem;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 0.6rem;
-            font-weight: 600;
-            color: #444444;
-            font-size: 1.05rem;
-        }
-
-        .form-label i {
-            color: #FFA94D;
-            margin-right: 8px;
-            width: 20px;
-            text-align: center;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.9rem 1.2rem;
-            border: 1px solid #DDDDDD;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            background-color: #FAFAFA;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: #FFA94D;
-            box-shadow: 0 0 0 3px rgba(255, 169, 77, 0.2);
-            background-color: #FFFFFF;
-        }
-
-        textarea.form-control {
-            min-height: 150px;
-            resize: vertical;
-            line-height: 1.5;
-        }
-
-        .form-control-file {
-            padding: 0.8rem;
-            border: 2px dashed #DDDDDD;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .form-control-file:hover {
-            border-color: #FFA94D;
-            background-color: rgba(255, 169, 77, 0.05);
-        }
-
-        .file-preview {
-            margin-top: 1rem;
-            display: none;
-        }
-
-        .file-preview img {
-            max-width: 200px;
-            max-height: 150px;
-            border-radius: 8px;
-            border: 1px solid #EEEEEE;
-        }
-
-        .form-hint {
-            font-size: 0.9rem;
-            color: #777777;
-            margin-top: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .form-hint i {
-            color: #FFA94D;
-        }
-
-        /* Кнопки формы */
-        .form-buttons {
-            display: flex;
-            gap: 1rem;
-            margin-top: 2.5rem;
-            padding-top: 2rem;
-            border-top: 1px solid #EEEEEE;
-        }
-
-        .btn {
-            padding: 1rem 2rem;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            flex: 1;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #7ED957, #A8E6CF);
-            color: #2E7D32;
-            box-shadow: 0 2px 8px rgba(126, 217, 87, 0.3);
-        }
-
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #5ECF4D, #97D9B4);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(94, 207, 77, 0.4);
-            color: #1B5E20;
-        }
-
-        .btn-secondary {
-            background: linear-gradient(135deg, #FFD166, #FFA94D);
-            color: #333333;
-            box-shadow: 0 2px 8px rgba(255, 166, 0, 0.3);
-        }
-
-        .btn-secondary:hover {
-            background: linear-gradient(135deg, #FFC043, #FF8C00);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(255, 166, 0, 0.4);
-        }
-
-        /* Кнопка закрытия заказа */
-        .btn-danger {
-            background: linear-gradient(135deg, #FF6B6B, #FF8E8E);
-            color: #FFFFFF;
-            box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
-        }
-
-        .btn-danger:hover {
-            background: linear-gradient(135deg, #FF5252, #FF7B7B);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(255, 82, 82, 0.4);
-            color: #FFFFFF;
-        }
-
-        .btn i {
-            font-size: 1.2rem;
-        }
-
-        /* Подвал - идентичный главной */
-        .footer {
-            background-color: #FAFAFA;
-            color: #333333;
-            padding: 3rem 0;
-            margin-top: auto;
-            text-align: center;
-            border-top: 1px solid #EEEEEE;
-        }
-
-        .footer .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.5rem;
-        }
-
-        .footer p {
-            font-size: 1.2rem;
-            font-weight: 600;
-        }
-
-        .footer-email {
-            font-size: 1.2rem;
-            color: #FF8C00;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-
-        .footer-email:hover {
-            color: #FF8C00;
-            transform: translateY(-2px);
-        }
-
-        .footer-email i {
-            font-size: 1.4rem;
-        }
-
-        /* Адаптивность ДЛЯ МОБИЛЬНОГО МЕНЮ - ДОБАВЛЕНО КАК В INDEX.HTML */
-        @media (max-width: 768px) {
-            .mobile-menu-btn {
-                display: block;
-            }
-            
-            .main-nav {
-                position: fixed;
-                top: 70px;
-                left: 0;
-                width: 100%;
-                background: #FAFAFA;
-                flex-direction: column;
-                padding: 20px;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-                transform: translateY(-150%);
-                transition: transform 0.3s;
-                z-index: 999;
-                gap: 0;
-            }
-            
-            .main-nav.active {
-                transform: translateY(0);
-            }
-            
-            .nav-link {
-                padding: 12px 0;
-                justify-content: center;
-                width: 100%;
-                height: auto;
-                border-bottom: 1px solid #EEEEEE;
-            }
-            
-            .nav-link:last-child {
-                border-bottom: none;
-            }
-            
-            .nav-text {
-                justify-content: center;
-            }
-            
-            /* Остальная адаптивность формы */
-            .form-row {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-            
-            .add-order-form {
-                padding: 1.5rem;
-            }
-            
-            h1 {
-                font-size: 2.2rem;
-            }
-            
-            .logo {
-                font-size: 1.6rem;
-            }
-            
-            .main-content {
-                padding: 6rem 0 2rem;
-            }
-            
-            .form-buttons {
-                flex-direction: column;
-            }
-            
-            .btn {
-                width: 100%;
-            }
-            
-            .footer-email {
-                font-size: 1rem;
-            }
-        }
+<!-- Форма добавления заказа -->
+<form class="add-order-form" id="orderForm">
+    <div class="form-row">
+        <div class="form-group">
+            <label class="form-label" for="orderTitle">
+                <i class="fas fa-heading"></i> Название заказа
+            </label>
+            <input type="text" id="orderTitle" class="form-control" placeholder="Например: Ремонт ноутбука" required>
+            <div class="form-hint">
+                <i class="fas fa-info-circle"></i> Коротко и понятно опишите задание
+            </div>
+        </div>
         
-        @media (max-width: 480px) {
-            .nav-link {
-                font-size: 0.9rem;
-            }
-            
-            .add-order-form {
-                padding: 1.2rem;
-            }
-            
-            .form-control {
-                padding: 0.8rem 1rem;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- Шапка - ОБНОВЛЕНА КАК В INDEX.HTML -->
-    <header class="header" id="mainHeader">
-        <div class="container">
-            <a href="/" class="logo">
-                Халтурка.ру
-            </a>
-            
-            <!-- Кнопка мобильного меню - ДОБАВЛЕНО -->
-            <button class="mobile-menu-btn" id="mobileMenuBtn">
-                <i class="fas fa-bars"></i>
+        <div class="form-group">
+            <label class="form-label" for="orderCategory">
+                <i class="fas fa-tag"></i> Категория
+            </label>
+            <select id="orderCategory" class="form-control" required>
+                <option value="">Выберите категорию</option>
+                <option value="repair">Ремонт техники</option>
+                <option value="design">Дизайн</option>
+                <option value="transport">Грузоперевозки</option>
+                <option value="cleaning">Уборка</option>
+                <option value="tutoring">Репетиторство</option>
+                <option value="programming">Программирование</option>
+                <option value="building">Ремонт и строительство</option>
+                <option value="other">Другое</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label class="form-label" for="orderDescription">
+            <i class="fas fa-file-alt"></i> Подробное описание
+        </label>
+        <textarea id="orderDescription" class="form-control" placeholder="Опишите задание максимально подробно: что нужно сделать, какие требования, сроки и т.д." required></textarea>
+        <div class="form-hint">
+            <i class="fas fa-lightbulb"></i> Чем подробнее описание, тем быстрее найдется исполнитель
+        </div>
+    </div>
+    
+    <div class="form-row">
+        <div class="form-group">
+            <label class="form-label" for="orderBudget">
+                <i class="fas fa-ruble-sign"></i> Бюджет
+            </label>
+            <input type="number" id="orderBudget" class="form-control" placeholder="5000" min="100" step="100" required>
+            <div class="form-hint">
+                <i class="fas fa-wallet"></i> Укажите сумму в рублях
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label" for="orderLocation">
+                <i class="fas fa-map-marker-alt"></i> Местоположение
+            </label>
+            <input type="text" id="orderLocation" class="form-control" placeholder="Москва, Центральный район" required>
+            <div class="form-hint">
+                <i class="fas fa-location-arrow"></i> Где нужно выполнить работу?
+            </div>
+        </div>
+    </div>
+    
+    <div class="form-row">
+        <div class="form-group">
+            <label class="form-label" for="orderDeadline">
+                <i class="far fa-calendar-alt"></i> Срок выполнения
+            </label>
+            <input type="date" id="orderDeadline" class="form-control" required>
+            <div class="form-hint">
+                <i class="far fa-clock"></i> Когда нужно завершить работу?
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label" for="orderPhone">
+                <i class="fas fa-phone"></i> Контактный телефон
+            </label>
+            <input type="tel" id="orderPhone" class="form-control" placeholder="+7 (999) 123-45-67" required>
+            <div class="form-hint">
+                <i class="fas fa-user-secret"></i> Только для связи с исполнителем
+            </div>
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label class="form-label" for="orderImage">
+            <i class="fas fa-image"></i> Изображение (опционально)
+        </label>
+        <div class="form-control-file">
+            <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: #FFA94D; margin-bottom: 10px;"></i>
+            <p>Нажмите для загрузки изображения</p>
+            <p style="font-size: 0.9rem; color: #777;">JPG, PNG до 5MB</p>
+        </div>
+        <input type="file" id="imageInput" accept="image/*" style="display: none;">
+        <div class="file-preview" id="imagePreview">
+            <img id="previewImage" src="" alt="Предпросмотр">
+            <button type="button" class="remove-image-btn">
+                <i class="fas fa-trash"></i> Удалить
             </button>
-            
-            <!-- Навигация - ОБНОВЛЕНО -->
-            <nav class="main-nav" id="mainNav">
-                <a href="/" class="nav-link active">
-                    <span class="nav-text">
-                        <i class="fas fa-home"></i> Главная
-                    </span>
-                </a>
-                <a href="#" class="nav-link">
-                    <span class="nav-text">
-                        <i class="fas fa-wallet"></i> Баланс
-                    </span>
-                </a>
-                <a href="#" class="nav-link">
-                    <span class="nav-text">
-                        <i class="fas fa-sign-in-alt"></i> Войти
-                    </span>
-                </a>
-            </nav>
         </div>
-    </header>
+    </div>
+    
+    <div class="form-buttons">
+        <button type="button" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Назад
+        </button>
+        <button type="button" class="btn btn-danger" id="closeOrderBtn">
+            <i class="fas fa-times-circle"></i> Закрыть заказ
+        </button>
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-check"></i> Опубликовать заказ
+        </button>
+    </div>
+</form>
+{% endblock %}
 
-    <!-- Основной контент -->
-    <main class="container main-content">
-        <h1>Добавить новый заказ</h1>
-        <p class="page-description">Заполните информацию о вашем задании, чтобы найти исполнителя</p>
-        
-        <!-- Форма добавления заказа -->
-        <form class="add-order-form" id="orderForm">
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label" for="orderTitle">
-                        <i class="fas fa-heading"></i> Название заказа
-                    </label>
-                    <input type="text" id="orderTitle" class="form-control" placeholder="Например: Ремонт ноутбука" required>
-                    <div class="form-hint">
-                        <i class="fas fa-info-circle"></i> Коротко и понятно опишите задание
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="orderCategory">
-                        <i class="fas fa-tag"></i> Категория
-                    </label>
-                    <select id="orderCategory" class="form-control" required>
-                        <option value="">Выберите категорию</option>
-                        <option value="repair">Ремонт техники</option>
-                        <option value="design">Дизайн</option>
-                        <option value="transport">Грузоперевозки</option>
-                        <option value="cleaning">Уборка</option>
-                        <option value="tutoring">Репетиторство</option>
-                        <option value="programming">Программирование</option>
-                        <option value="building">Ремонт и строительство</option>
-                        <option value="other">Другое</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label" for="orderDescription">
-                    <i class="fas fa-file-alt"></i> Подробное описание
-                </label>
-                <textarea id="orderDescription" class="form-control" placeholder="Опишите задание максимально подробно: что нужно сделать, какие требования, сроки и т.д." required></textarea>
-                <div class="form-hint">
-                    <i class="fas fa-lightbulb"></i> Чем подробнее описание, тем быстрее найдется исполнитель
-                </div>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label" for="orderBudget">
-                        <i class="fas fa-ruble-sign"></i> Бюджет
-                    </label>
-                    <input type="number" id="orderBudget" class="form-control" placeholder="5000" min="100" step="100" required>
-                    <div class="form-hint">
-                        <i class="fas fa-wallet"></i> Укажите сумму в рублях
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="orderLocation">
-                        <i class="fas fa-map-marker-alt"></i> Местоположение
-                    </label>
-                    <input type="text" id="orderLocation" class="form-control" placeholder="Москва, Центральный район" required>
-                    <div class="form-hint">
-                        <i class="fas fa-location-arrow"></i> Где нужно выполнить работу?
-                    </div>
-                </div>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label" for="orderDeadline">
-                        <i class="far fa-calendar-alt"></i> Срок выполнения
-                    </label>
-                    <input type="date" id="orderDeadline" class="form-control" required>
-                    <div class="form-hint">
-                        <i class="far fa-clock"></i> Когда нужно завершить работу?
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="orderPhone">
-                        <i class="fas fa-phone"></i> Контактный телефон
-                    </label>
-                    <input type="tel" id="orderPhone" class="form-control" placeholder="+7 (999) 123-45-67" required>
-                    <div class="form-hint">
-                        <i class="fas fa-user-secret"></i> Только для связи с исполнителем
-                    </div>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label" for="orderImage">
-                    <i class="fas fa-image"></i> Изображение (опционально)
-                </label>
-                <div class="form-control-file" onclick="document.getElementById('imageInput').click()">
-                    <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: #FFA94D; margin-bottom: 10px;"></i>
-                    <p>Нажмите для загрузки изображения</p>
-                    <p style="font-size: 0.9rem; color: #777;">JPG, PNG до 5MB</p>
-                </div>
-                <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="previewImage(event)">
-                <div class="file-preview" id="imagePreview">
-                    <img id="previewImage" src="" alt="Предпросмотр">
-                    <button type="button" onclick="removeImage()" style="margin-top: 10px; background: #ff6b6b; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
-                        <i class="fas fa-trash"></i> Удалить
-                    </button>
-                </div>
-            </div>
-            
-            <div class="form-buttons">
-                <button type="button" class="btn btn-secondary" onclick="window.location.href='/'">
-                    <i class="fas fa-arrow-left"></i> Назад
-                </button>
-                <button type="button" class="btn btn-danger" id="closeOrderBtn">
-                    <i class="fas fa-times-circle"></i> Закрыть заказ
-                </button>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-check"></i> Опубликовать заказ
-                </button>
-            </div>
-        </form>
-    </main>
-
-    <!-- Подвал -->
-    <footer class="footer">
-        <div class="container">
-            <p>© 2025 Халтурка.ру - площадка для заказов и услуг</p>
-            <a href="mailto:example@mail.ru" class="footer-email">
-                <i class="fas fa-envelope"></i> example@mail.ru
-            </a>
-        </div>
-    </footer>
-
-    <script>
-        // Скрипт для автоматического скрытия/показа шапки при прокрутке - КАК В INDEX.HTML
-        let lastScrollTop = 0;
-        const header = document.getElementById('mainHeader');
-        const scrollThreshold = 60;
-        
-        window.addEventListener('scroll', function() {
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            
-            if (scrollTop > lastScrollTop && scrollTop > scrollThreshold) {
-                header.classList.add('hidden');
-            } 
-            else if (scrollTop < lastScrollTop) {
-                header.classList.remove('hidden');
-            }
-            
-            lastScrollTop = scrollTop;
-        });
-
-        // Мобильное меню - ДОБАВЛЕНО КАК В INDEX.HTML
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const mainNav = document.getElementById('mainNav');
-        
-        mobileMenuBtn.addEventListener('click', () => {
-            mainNav.classList.toggle('active');
-            mobileMenuBtn.innerHTML = mainNav.classList.contains('active') 
-                ? '<i class="fas fa-times"></i>' 
-                : '<i class="fas fa-bars"></i>';
-        });
-        
-        // Закрыть мобильное меню при клике на ссылку - ДОБАВЛЕНО
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', () => {
-                mainNav.classList.remove('active');
-                mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
-            });
-        });
-
-        // Предпросмотр изображения
-        function previewImage(event) {
-            const input = event.target;
-            const preview = document.getElementById('imagePreview');
-            const previewImage = document.getElementById('previewImage');
-            
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    previewImage.src = e.target.result;
-                    preview.style.display = 'block';
-                }
-                
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-        
-        function removeImage() {
-            document.getElementById('imageInput').value = '';
-            document.getElementById('imagePreview').style.display = 'none';
-            document.getElementById('previewImage').src = '';
-        }
-
-        // Обработка кнопки "Закрыть заказ"
-        document.getElementById('closeOrderBtn').addEventListener('click', function() {
-            const confirmed = confirm('Вы уверены, что хотите закрыть заказ? Это действие нельзя будет отменить.');
-            
-            if (confirmed) {
-                // Анимация нажатия
-                this.style.transform = 'scale(0.98)';
-                
-                // Симуляция закрытия заказа
-                console.log('Заказ закрыт');
-                
-                // Показать сообщение об успехе
-                setTimeout(() => {
-                    alert('✅ Заказ успешно закрыт!');
-                    
-                    // Перенаправление на главную
-                    setTimeout(() => {
-                        window.location.href = 'index.html';
-                    }, 1000);
-                }, 500);
-                
-                setTimeout(() => {
-                    this.style.transform = '';
-                }, 200);
-            }
-        });
-
-        // Обработка формы
-        document.getElementById('orderForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Сбор данных из формы
-            const formData = {
-                title: document.getElementById('orderTitle').value,
-                category: document.getElementById('orderCategory').value,
-                description: document.getElementById('orderDescription').value,
-                budget: document.getElementById('orderBudget').value,
-                location: document.getElementById('orderLocation').value,
-                deadline: document.getElementById('orderDeadline').value,
-                phone: document.getElementById('orderPhone').value
-            };
-            
-            // Валидация
-            if (!formData.title || !formData.category || !formData.description || !formData.budget || !formData.location || !formData.deadline || !formData.phone) {
-                alert('Пожалуйста, заполните все обязательные поля!');
-                return;
-            }
-            
-            // Симуляция отправки данных
-            console.log('Данные заказа:', formData);
-            
-            // Показать сообщение об успехе
-            alert('✅ Заказ успешно опубликован!\n\nОн появится в списке после проверки модератором.');
-            
-            // Перенаправление на главную
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 1500);
-        });
-
-        // Установка минимальной даты на завтра
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const minDate = tomorrow.toISOString().split('T')[0];
-        document.getElementById('orderDeadline').min = minDate;
-        
-        // Установка значения по умолчанию (через 3 дня)
-        const defaultDate = new Date();
-        defaultDate.setDate(defaultDate.getDate() + 3);
-        document.getElementById('orderDeadline').value = defaultDate.toISOString().split('T')[0];
-    </script>
-
-</body>
-</html>
+{% block extra_js %}
+<script src="{% static 'WEBSITE/js/add_order.js' %}"></script>
+{% endblock %}

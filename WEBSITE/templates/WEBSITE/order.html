@@ -1,907 +1,142 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Детали заказа | Халтурка.ру</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+{% extends "WEBSITE/base.html" %}
+{% load static %}
 
-        body {
-            background-color: #FAFAFA;
-            color: #333333;
-            line-height: 1.6;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+{% block title %}Детали заказа | Халтурка.ру{% endblock %}
 
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'WEBSITE/css/order.css' %}">
+{% endblock %}
 
-        /* Шапка - ОБНОВЛЕННАЯ КАК В INDEX.HTML */
-        .header {
-            background-color: #FAFAFA;
-            padding: 1rem 0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
-            border-bottom: 1px solid #EEEEEE;
-            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            transform: translateY(0);
-        }
-
-        .header.hidden {
-            transform: translateY(-100%);
-        }
-
-        .header .container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #FF8C00;
-            text-decoration: none;
-        }
-
-        .main-nav {
-            display: flex;
-            gap: 1.5rem;
-        }
-
-        .nav-link {
-            color: #333333;
-            text-decoration: none;
-            font-weight: 600;
-            padding: 0.5rem 1rem;
-            border-radius: 0;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 1rem;
-            position: relative;
-            background-color: transparent !important;
-            width: 130px;
-            height: 45px;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .nav-text {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-            transform-origin: center;
-        }
-
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 3px;
-            background: linear-gradient(135deg, #FFD166, #FFA94D);
-            transition: width 0.3s ease;
-            border-radius: 2px;
-        }
-
-        .nav-link:hover .nav-text,
-        .nav-link.active .nav-text {
-            transform: scale(1.1);
-        }
-
-        .nav-link:hover::after,
-        .nav-link.active::after {
-            width: 90%;
-        }
-
-        .nav-link.active {
-            font-weight: 700;
-        }
-
-        /* Мобильная кнопка меню */
-        .mobile-menu-btn {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 24px;
-            color: #FF8C00;
-            cursor: pointer;
-            padding: 5px;
-        }
-
-        /* Основной контент */
-        .main-content {
-            padding: 5rem 0 3rem;
-            flex: 1;
-        }
-
-        h1 {
-            font-size: 2.8rem;
-            margin-bottom: 1.5rem;
-            color: #333333;
-            font-weight: 800;
-        }
-
-        .page-description {
-            color: #666666;
-            margin-bottom: 2rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid #EEEEEE;
-            font-size: 1.2rem;
-        }
-
-        /* Детали заказа */
-        .order-details-container {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        .order-details-card {
-            background: #FFFFFF;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            border: 1px solid #EEEEEE;
-        }
-
-        .order-image-large {
-            width: 100%;
-            height: 400px;
-            overflow: hidden;
-        }
-
-        .order-image-large img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .order-info {
-            padding: 2.5rem;
-        }
-
-        .order-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-            gap: 1.5rem;
-        }
-
-        .order-title-large {
-            font-size: 2.2rem;
-            color: #333333;
-            font-weight: 800;
-            flex: 1;
-            min-width: 300px;
-        }
-
-        .order-price-large {
-            background: linear-gradient(135deg, #FFD166, #FFA94D);
-            padding: 1rem 2rem;
-            border-radius: 10px;
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: #333333;
-            text-align: center;
-            min-width: 200px;
-        }
-
-        .order-meta-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2.5rem;
-            padding-bottom: 2rem;
-            border-bottom: 1px solid #EEEEEE;
-        }
-
-        .meta-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 1rem;
-            background-color: rgba(255, 169, 77, 0.05);
-            border-radius: 8px;
-            border: 1px solid rgba(255, 169, 77, 0.1);
-        }
-
-        .meta-icon {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, #FFD166, #FFA94D);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: white;
-            flex-shrink: 0;
-        }
-
-        .meta-content h3 {
-            font-size: 1rem;
-            color: #777777;
-            margin-bottom: 0.3rem;
-            font-weight: 600;
-        }
-
-        .meta-content p {
-            font-size: 1.1rem;
-            color: #333333;
-            font-weight: 700;
-        }
-
-        .order-description-full {
-            margin-bottom: 2.5rem;
-        }
-
-        .order-description-full h2 {
-            font-size: 1.8rem;
-            color: #333333;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .order-description-full h2 i {
-            color: #FFA94D;
-        }
-
-        .description-text {
-            color: #555555;
-            line-height: 1.8;
-            font-size: 1.1rem;
-            padding: 1.5rem;
-            background-color: rgba(255, 169, 77, 0.05);
-            border-radius: 10px;
-            border-left: 4px solid #FFA94D;
-        }
-
-        /* Контактная информация */
-        .contact-info {
-            background: linear-gradient(135deg, #FFD166, #FFA94D);
-            padding: 2rem;
-            border-radius: 12px;
-            margin-bottom: 2.5rem;
-        }
-
-        .contact-info h2 {
-            color: #333333;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.6rem;
-        }
-
-        .contact-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .contact-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 1rem;
-            background-color: rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .contact-item:hover {
-            background-color: rgba(255, 255, 255, 0.5);
-            transform: translateY(-2px);
-        }
-
-        .contact-item i {
-            font-size: 1.3rem;
-            color: #333333;
-        }
-
-        .contact-item span {
-            color: #333333;
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-
-        /* Кнопки действий */
-        .action-buttons {
-            display: flex;
-            gap: 1.5rem;
-            margin-top: 2.5rem;
-            padding-top: 2.5rem;
-            border-top: 1px solid #EEEEEE;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 1rem 2.5rem;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            text-decoration: none;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #7ED957, #A8E6CF);
-            color: #2E7D32;
-            box-shadow: 0 2px 8px rgba(126, 217, 87, 0.3);
-            flex: 1;
-            min-width: 250px;
-        }
-
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #5ECF4D, #97D9B4);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(94, 207, 77, 0.4);
-            color: #1B5E20;
-        }
-
-        .btn-secondary {
-            background: linear-gradient(135deg, #FFD166, #FFA94D);
-            color: #333333;
-            box-shadow: 0 2px 8px rgba(255, 166, 0, 0.3);
-            flex: 1;
-            min-width: 250px;
-        }
-
-        .btn-secondary:hover {
-            background: linear-gradient(135deg, #FFC043, #FF8C00);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(255, 166, 0, 0.4);
-        }
-
-        .btn-back {
-            background: transparent;
-            color: #777777;
-            border: 2px solid #DDDDDD;
-            box-shadow: none;
-        }
-
-        .btn-back:hover {
-            background: #FAFAFA;
-            color: #333333;
-            border-color: #FFA94D;
-        }
-
-        /* Подвал - идентичный другим страницам */
-        .footer {
-            background-color: #FAFAFA;
-            color: #333333;
-            padding: 3rem 0;
-            margin-top: auto;
-            text-align: center;
-            border-top: 1px solid #EEEEEE;
-        }
-
-        .footer .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.5rem;
-        }
-
-        .footer p {
-            font-size: 1.2rem;
-            font-weight: 600;
-        }
-
-        .footer-email {
-            font-size: 1.2rem;
-            color: #FF8C00;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-
-        .footer-email:hover {
-            color: #FF8C00;
-            transform: translateY(-2px);
-        }
-
-        .footer-email i {
-            font-size: 1.4rem;
-        }
-
-        /* АДАПТИВНОСТЬ КАК В INDEX.HTML */
-        @media (max-width: 768px) {
-            .mobile-menu-btn {
-                display: block;
-            }
-            
-            .main-nav {
-                position: fixed;
-                top: 70px;
-                left: 0;
-                width: 100%;
-                background: #FAFAFA;
-                flex-direction: column;
-                padding: 20px;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-                transform: translateY(-150%);
-                transition: transform 0.3s;
-                z-index: 999;
-                gap: 0;
-            }
-            
-            .main-nav.active {
-                transform: translateY(0);
-            }
-            
-            .nav-link {
-                padding: 12px 0;
-                justify-content: center;
-                width: 100%;
-                height: auto;
-                border-bottom: 1px solid #EEEEEE;
-            }
-            
-            .nav-link:last-child {
-                border-bottom: none;
-            }
-            
-            .nav-text {
-                justify-content: center;
-            }
-            
-            .order-header {
-                flex-direction: column;
-            }
-            
-            .order-title-large {
-                font-size: 1.8rem;
-            }
-            
-            .order-price-large {
-                width: 100%;
-            }
-            
-            .order-image-large {
-                height: 300px;
-            }
-            
-            .order-info {
-                padding: 1.5rem;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-            }
-            
-            .btn {
-                width: 100%;
-            }
-            
-            h1 {
-                font-size: 2.2rem;
-            }
-            
-            .logo {
-                font-size: 1.6rem;
-            }
-            
-            .main-content {
-                padding: 4rem 0 2rem;
-            }
-            
-            .footer-email {
-                font-size: 1rem;
-            }
-            
-            .order-meta-details {
-                grid-template-columns: 1fr;
-            }
-            
-            .contact-details {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .nav-link {
-                font-size: 0.9rem;
-            }
-            
-            .order-title-large {
-                font-size: 1.6rem;
-            }
-            
-            .order-price-large {
-                font-size: 1.5rem;
-                padding: 0.8rem 1.5rem;
-            }
-            
-            .meta-item {
-                flex-direction: column;
-                text-align: center;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- Шапка - ОБНОВЛЕННАЯ -->
-    <header class="header" id="mainHeader">
-        <div class="container">
-            <a href="/" class="logo">
-                Халтурка.ру
-            </a>
-            
-            <!-- Кнопка мобильного меню -->
-            <button class="mobile-menu-btn" id="mobileMenuBtn">
-                <i class="fas fa-bars"></i>
-            </button>
-            
-            <!-- Навигация БЕЗ ПУНКТА "ЗАКАЗЫ" -->
-            <nav class="main-nav" id="mainNav">
-                <a href="/" class="nav-link">
-                    <span class="nav-text">
-                        <i class="fas fa-home"></i> Главная
-                    </span>
-                </a>
-                <a href="#" class="nav-link">
-                    <span class="nav-text">
-                        <i class="fas fa-wallet"></i> Баланс
-                    </span>
-                </a>
-                <a href="personal_account.html" class="nav-link">
-                    <span class="nav-text">
-                        <i class="fas fa-user"></i> Войти
-                    </span>
-                </a>
-            </nav>
+{% block content %}
+<div class="order-details-container">
+    <h1>Детали заказа</h1>
+    <p class="page-description">Подробная информация о выбранном задании</p>
+    
+    <div class="order-details-card">
+        <!-- Изображение заказа -->
+        <div class="order-image-large">
+            <img src="https://avatars.mds.yandex.net/i?id=d022000450f8d25125fa4ffc562e2715_l-5487767-images-thumbs&n=13" alt="Ремонт ноутбука">
         </div>
-    </header>
-
-    <!-- Основной контент -->
-    <main class="container main-content">
-        <h1>Детали заказа</h1>
-        <p class="page-description">Подробная информация о выбранном задании</p>
         
-        <div class="order-details-container">
-            <div class="order-details-card">
-                <!-- Изображение заказа -->
-                <div class="order-image-large">
-                    <img src="https://avatars.mds.yandex.net/i?id=d022000450f8d25125fa4ffc562e2715_l-5487767-images-thumbs&n=13" alt="Ремонт ноутбука">
+        <!-- Информация о заказе -->
+        <div class="order-info">
+            <div class="order-header">
+                <h1 class="order-title-large">Ремонт ноутбука ASUS</h1>
+                <div class="order-price-large">3 500 ₽</div>
+            </div>
+            
+            <!-- Мета-информация -->
+            <div class="order-meta-details">
+                <div class="meta-item">
+                    <div class="meta-icon">
+                        <i class="fas fa-tag"></i>
+                    </div>
+                    <div class="meta-content">
+                        <h3>Категория</h3>
+                        <p>Ремонт техники</p>
+                    </div>
                 </div>
                 
-                <!-- Информация о заказе -->
-                <div class="order-info">
-                    <div class="order-header">
-                        <h1 class="order-title-large">Ремонт ноутбука ASUS</h1>
-                        <div class="order-price-large">3 500 ₽</div>
+                <div class="meta-item">
+                    <div class="meta-icon">
+                        <i class="fas fa-map-marker-alt"></i>
                     </div>
-                    
-                    <!-- Мета-информация -->
-                    <div class="order-meta-details">
-                        <div class="meta-item">
-                            <div class="meta-icon">
-                                <i class="fas fa-tag"></i>
-                            </div>
-                            <div class="meta-content">
-                                <h3>Категория</h3>
-                                <p>Ремонт техники</p>
-                            </div>
-                        </div>
-                        
-                        <div class="meta-item">
-                            <div class="meta-icon">
-                                <i class="fas fa-map-marker-alt"></i>
-                            </div>
-                            <div class="meta-content">
-                                <h3>Местоположение</h3>
-                                <p>Москва, Центральный район</p>
-                            </div>
-                        </div>
-                        
-                        <div class="meta-item">
-                            <div class="meta-icon">
-                                <i class="far fa-calendar-alt"></i>
-                            </div>
-                            <div class="meta-content">
-                                <h3>Срок выполнения</h3>
-                                <p>До 20 декабря 2023</p>
-                            </div>
-                        </div>
-                        
-                        <div class="meta-item">
-                            <div class="meta-icon">
-                                <i class="fas fa-clock"></i>
-                            </div>
-                            <div class="meta-content">
-                                <h3>Дата публикации</h3>
-                                <p>Сегодня, 10:30</p>
-                            </div>
-                        </div>
+                    <div class="meta-content">
+                        <h3>Местоположение</h3>
+                        <p>Москва, Центральный район</p>
                     </div>
-                    
-                    <!-- Полное описание -->
-                    <div class="order-description-full">
-                        <h2><i class="fas fa-file-alt"></i> Подробное описание задания</h2>
-                        <div class="description-text">
-                            <p>Требуется замена матрицы на ноутбуке ASUS X515EA. Ноутбук упал с высоты около 1 метра, после чего перестал включаться. На экране появились вертикальные полосы, изображение искажено.</p>
-                            <br>
-                            <p><strong>Что нужно сделать:</strong></p>
-                            <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
-                                <li>Провести полную диагностику ноутбука</li>
-                                <li>Заменить матрицу на новую (оригинальную или качественный аналог)</li>
-                                <li>Проверить работу всех компонентов после замены</li>
-                                <li>Установить необходимые драйверы</li>
-                            </ul>
-                            <br>
-                            <p><strong>Требования к исполнителю:</strong></p>
-                            <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
-                                <li>Опыт работы с техникой ASUS не менее 2 лет</li>
-                                <li>Наличие оригинальных запчастей или сертифицированных аналогов</li>
-                                <li>Гарантия на выполненные работы не менее 3 месяцев</li>
-                                <li>Возможность выезда на дом (Москва, Центральный район)</li>
-                            </ul>
-                            <br>
-                            <p>Работу нужно выполнить срочно, желательно в течение сегодняшнего дня. Готов оплатить дополнительно за срочность.</p>
-                        </div>
+                </div>
+                
+                <div class="meta-item">
+                    <div class="meta-icon">
+                        <i class="far fa-calendar-alt"></i>
                     </div>
-                    
-                    <!-- Контактная информация заказчика -->
-                    <div class="contact-info">
-                        <h2><i class="fas fa-address-card"></i> Контакты заказчика</h2>
-                        <div class="contact-details">
-                            <a href="tel:+79991234567" class="contact-item">
-                                <i class="fas fa-phone"></i>
-                                <span>+7 (999) 123-45-67</span>
-                            </a>
-                            <a href="https://t.me/ivan_ivanov" target="_blank" class="contact-item">
-                                <i class="fab fa-telegram"></i>
-                                <span>@ivan_ivanov</span>
-                            </a>
-                            <div class="contact-item">
-                                <i class="fas fa-user"></i>
-                                <span>Иван Иванов</span>
-                            </div>
-                            <div class="contact-item">
-                                <i class="fas fa-envelope"></i>
-                                <span>ivan@example.com</span>
-                            </div>
-                        </div>
-                        <div style="margin-top: 1rem; color: #333333; font-size: 0.9rem; text-align: center;">
-                            <i class="fas fa-info-circle"></i> Для связи с заказчиком используйте указанные контакты
-                        </div>
+                    <div class="meta-content">
+                        <h3>Срок выполнения</h3>
+                        <p>До 20 декабря 2023</p>
                     </div>
-                    
-                    <!-- Кнопки действий -->
-                    <div class="action-buttons">
-                        <button class="btn btn-primary" id="respondBtn">
-                            <i class="fas fa-handshake"></i> Откликнуться на заказ
-                        </button>
-                        <button class="btn btn-secondary" id="copyContactsBtn">
-                            <i class="fas fa-copy"></i> Скопировать контакты
-                        </button>
-                        <a href="/" class="btn btn-back">
-                            <i class="fas fa-arrow-left"></i> Назад к заказам
-                        </a>
+                </div>
+                
+                <div class="meta-item">
+                    <div class="meta-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="meta-content">
+                        <h3>Дата публикации</h3>
+                        <p>Сегодня, 10:30</p>
                     </div>
                 </div>
             </div>
+            
+            <!-- Полное описание -->
+            <div class="order-description-full">
+                <h2><i class="fas fa-file-alt"></i> Подробное описание задания</h2>
+                <div class="description-text">
+                    <p>Требуется замена матрицы на ноутбуке ASUS X515EA. Ноутбук упал с высоты около 1 метра, после чего перестал включаться. На экране появились вертикальные полосы, изображение искажено.</p>
+                    <br>
+                    <p><strong>Что нужно сделать:</strong></p>
+                    <ul>
+                        <li>Провести полную диагностику ноутбука</li>
+                        <li>Заменить матрицу на новую (оригинальную или качественный аналог)</li>
+                        <li>Проверить работу всех компонентов после замены</li>
+                        <li>Установить необходимые драйверы</li>
+                    </ul>
+                    <br>
+                    <p><strong>Требования к исполнителю:</strong></p>
+                    <ul>
+                        <li>Опыт работы с техникой ASUS не менее 2 лет</li>
+                        <li>Наличие оригинальных запчастей или сертифицированных аналогов</li>
+                        <li>Гарантия на выполненные работы не менее 3 месяцев</li>
+                        <li>Возможность выезда на дом (Москва, Центральный район)</li>
+                    </ul>
+                    <br>
+                    <p>Работу нужно выполнить срочно, желательно в течение сегодняшнего дня. Готов оплатить дополнительно за срочность.</p>
+                </div>
+            </div>
+            
+            <!-- Контактная информация заказчика -->
+            <div class="contact-info">
+                <h2><i class="fas fa-address-card"></i> Контакты заказчика</h2>
+                <div class="contact-details">
+                    <a href="tel:+79991234567" class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <span>+7 (999) 123-45-67</span>
+                    </a>
+                    <a href="https://t.me/ivan_ivanov" target="_blank" class="contact-item">
+                        <i class="fab fa-telegram"></i>
+                        <span>@ivan_ivanov</span>
+                    </a>
+                    <div class="contact-item">
+                        <i class="fas fa-user"></i>
+                        <span>Иван Иванов</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <span>ivan@example.com</span>
+                    </div>
+                </div>
+                <div style="margin-top: 1rem; color: #333333; font-size: 0.9rem; text-align: center;">
+                    <i class="fas fa-info-circle"></i> Для связи с заказчиком используйте указанные контакты
+                </div>
+            </div>
+            
+            <!-- Кнопки действий -->
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="respondBtn">
+                    <i class="fas fa-handshake"></i> Откликнуться на заказ
+                </button>
+                <button class="btn btn-secondary" id="copyContactsBtn">
+                    <i class="fas fa-copy"></i> Скопировать контакты
+                </button>
+                <a href="{% url 'index' %}" class="btn btn-back">
+                    <i class="fas fa-arrow-left"></i> Назад к заказам
+                </a>
+            </div>
         </div>
-    </main>
+    </div>
+</div>
+{% endblock %}
 
-    <!-- Подвал -->
-    <footer class="footer">
-        <div class="container">
-            <p>© 2025 Халтурка.ру - площадка для заказов и услуг</p>
-            <a href="mailto:example@mail.ru" class="footer-email">
-                <i class="fas fa-envelope"></i> example@mail.ru
-            </a>
-        </div>
-    </footer>
-
-    <script>
-        // Скрипт для автоматического скрытия/показа шапки при прокрутке
-        let lastScrollTop = 0;
-        const header = document.getElementById('mainHeader');
-        const scrollThreshold = 60;
-        
-        window.addEventListener('scroll', function() {
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            
-            if (scrollTop > lastScrollTop && scrollTop > scrollThreshold) {
-                header.classList.add('hidden');
-            } 
-            else if (scrollTop < lastScrollTop) {
-                header.classList.remove('hidden');
-            }
-            
-            lastScrollTop = scrollTop;
-        });
-
-        // Мобильное меню (как в index.html)
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const mainNav = document.getElementById('mainNav');
-        
-        mobileMenuBtn.addEventListener('click', () => {
-            mainNav.classList.toggle('active');
-            mobileMenuBtn.innerHTML = mainNav.classList.contains('active') 
-                ? '<i class="fas fa-times"></i>' 
-                : '<i class="fas fa-bars"></i>';
-        });
-        
-        // Закрыть мобильное меню при клике на ссылку
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', () => {
-                mainNav.classList.remove('active');
-                mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
-            });
-        });
-
-        // Обработка отклика на заказ
-        document.getElementById('respondBtn').addEventListener('click', function() {
-            // Запрашиваем данные у исполнителя
-            const userName = prompt('Введите ваше имя:', '');
-            if (!userName) {
-                alert('Отмена: необходимо указать имя для отклика');
-                return;
-            }
-            
-            const userPhone = prompt('Введите ваш телефон для связи:', '');
-            if (!userPhone) {
-                alert('Отмена: необходимо указать телефон для связи');
-                return;
-            }
-            
-            // Здесь мог бы быть запрос к серверу для отправки отклика
-            alert(`Отлично, ${userName}! Ваш отклик отправлен заказчику.\n\nЗаказчик получит ваши контакты:\nТелефон: ${userPhone}\n\nОжидайте связи в ближайшее время.`);
-            
-            // Визуальная обратная связь
-            this.innerHTML = '<i class="fas fa-check"></i> Отклик отправлен';
-            this.style.background = 'linear-gradient(135deg, #4CAF50, #8BC34A)';
-            this.style.color = '#FFFFFF';
-            this.disabled = true;
-            
-            console.log('Отклик на заказ отправлен', { userName, userPhone });
-            
-            // Сохраняем в localStorage для истории
-            const responses = JSON.parse(localStorage.getItem('orderResponses')) || [];
-            responses.push({
-                orderId: 'repair-laptop-asus-001',
-                orderTitle: 'Ремонт ноутбука ASUS',
-                userName: userName,
-                userPhone: userPhone,
-                date: new Date().toISOString()
-            });
-            localStorage.setItem('orderResponses', JSON.stringify(responses));
-        });
-
-        // Копирование контактов
-        document.getElementById('copyContactsBtn').addEventListener('click', function() {
-            const phone = '+7 (999) 123-45-67';
-            const telegram = '@ivan_ivanov';
-            const name = 'Иван Иванов';
-            
-            const contactsText = `Контакты заказчика:\nТелефон: ${phone}\nTelegram: ${telegram}\nИмя: ${name}`;
-            
-            // Используем Clipboard API
-            navigator.clipboard.writeText(contactsText)
-                .then(() => {
-                    const originalText = this.innerHTML;
-                    this.innerHTML = '<i class="fas fa-check"></i> Контакты скопированы';
-                    this.style.background = 'linear-gradient(135deg, #4CAF50, #8BC34A)';
-                    this.style.color = '#FFFFFF';
-                    
-                    setTimeout(() => {
-                        this.innerHTML = originalText;
-                        this.style.background = '';
-                        this.style.color = '';
-                    }, 2000);
-                    
-                    console.log('Контакты скопированы в буфер обмена');
-                })
-                .catch(err => {
-                    console.error('Ошибка копирования: ', err);
-                    // Fallback для старых браузеров
-                    const textArea = document.createElement('textarea');
-                    textArea.value = contactsText;
-                    document.body.appendChild(textArea);
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                    
-                    alert('Контакты скопированы в буфер обмена!');
-                });
-        });
-
-        // Загрузка данных заказа из localStorage (для демонстрации)
-        document.addEventListener('DOMContentLoaded', function() {
-            // В реальном приложении здесь бы загружались данные заказа по ID из URL
-            const orderData = JSON.parse(localStorage.getItem('currentOrder')) || {
-                title: 'Ремонт ноутбука ASUS',
-                price: '3 500 ₽',
-                category: 'Ремонт техники',
-                location: 'Москва, Центральный район',
-                deadline: 'До 20 декабря 2023',
-                date: 'Сегодня, 10:30'
-            };
-            
-            // Обновляем данные на странице
-            document.querySelector('.order-title-large').textContent = orderData.title;
-            document.querySelector('.order-price-large').textContent = orderData.price;
-            document.querySelectorAll('.meta-content p')[0].textContent = orderData.category;
-            document.querySelectorAll('.meta-content p')[1].textContent = orderData.location;
-            document.querySelectorAll('.meta-content p')[2].textContent = orderData.deadline;
-            document.querySelectorAll('.meta-content p')[3].textContent = orderData.date;
-            
-            // Проверяем, был ли уже отклик на этот заказ
-            const responses = JSON.parse(localStorage.getItem('orderResponses')) || [];
-            const currentOrderId = 'repair-laptop-asus-001';
-            const hasResponded = responses.some(response => response.orderId === currentOrderId);
-            
-            if (hasResponded) {
-                const respondBtn = document.getElementById('respondBtn');
-                respondBtn.innerHTML = '<i class="fas fa-check"></i> Вы уже откликнулись';
-                respondBtn.style.background = 'linear-gradient(135deg, #4CAF50, #8BC34A)';
-                respondBtn.style.color = '#FFFFFF';
-                respondBtn.disabled = true;
-            }
-        });
-
-        // Клик по контактам для быстрого действия
-        document.querySelectorAll('.contact-item').forEach(item => {
-            item.addEventListener('click', function(e) {
-                if (this.tagName === 'A') return; // Если это ссылка, не перехватываем
-                
-                const text = this.querySelector('span').textContent;
-                const icon = this.querySelector('i').className;
-                
-                if (icon.includes('fa-phone')) {
-                    window.location.href = `tel:${text.replace(/\D/g, '')}`;
-                } else if (icon.includes('fa-envelope')) {
-                    window.location.href = `mailto:${text}`;
-                } else if (icon.includes('fa-telegram')) {
-                    window.open(`https://t.me/${text.replace('@', '')}`, '_blank');
-                }
-            });
-        });
-    </script>
-</body>
-</html>
+{% block extra_js %}
+<script src="{% static 'WEBSITE/js/order.js' %}"></script>
+{% endblock %}

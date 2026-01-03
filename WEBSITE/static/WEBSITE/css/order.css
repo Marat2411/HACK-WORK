@@ -1,0 +1,292 @@
+/* Стили для страницы деталей заказа */
+
+/* Детали заказа */
+.order-details-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.order-details-card {
+    background: #FFFFFF;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid #EEEEEE;
+}
+
+.order-image-large {
+    width: 100%;
+    height: 400px;
+    overflow: hidden;
+}
+
+.order-image-large img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.order-info {
+    padding: 2.5rem;
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.order-title-large {
+    font-size: 2.2rem;
+    color: #333333;
+    font-weight: 800;
+    flex: 1;
+    min-width: 300px;
+}
+
+.order-price-large {
+    background: linear-gradient(135deg, #FFD166, #FFA94D);
+    padding: 1rem 2rem;
+    border-radius: 10px;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #333333;
+    text-align: center;
+    min-width: 200px;
+}
+
+.order-meta-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #EEEEEE;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 1rem;
+    background-color: rgba(255, 169, 77, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 169, 77, 0.1);
+}
+
+.meta-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #FFD166, #FFA94D);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.meta-content h3 {
+    font-size: 1rem;
+    color: #777777;
+    margin-bottom: 0.3rem;
+    font-weight: 600;
+}
+
+.meta-content p {
+    font-size: 1.1rem;
+    color: #333333;
+    font-weight: 700;
+}
+
+.order-description-full {
+    margin-bottom: 2.5rem;
+}
+
+.order-description-full h2 {
+    font-size: 1.8rem;
+    color: #333333;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.order-description-full h2 i {
+    color: #FFA94D;
+}
+
+.description-text {
+    color: #555555;
+    line-height: 1.8;
+    font-size: 1.1rem;
+    padding: 1.5rem;
+    background-color: rgba(255, 169, 77, 0.05);
+    border-radius: 10px;
+    border-left: 4px solid #FFA94D;
+}
+
+.description-text ul {
+    margin-left: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+.description-text li {
+    margin-bottom: 0.5rem;
+}
+
+/* Контактная информация */
+.contact-info {
+    background: linear-gradient(135deg, #FFD166, #FFA94D);
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2.5rem;
+}
+
+.contact-info h2 {
+    color: #333333;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.6rem;
+}
+
+.contact-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+}
+
+.contact-item:hover {
+    background-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+.contact-item i {
+    font-size: 1.3rem;
+    color: #333333;
+}
+
+.contact-item span {
+    color: #333333;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+/* Кнопки действий */
+.action-buttons {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 2.5rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid #EEEEEE;
+    flex-wrap: wrap;
+}
+
+.action-buttons .btn {
+    padding: 1rem 2.5rem;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-decoration: none;
+    flex: 1;
+    min-width: 250px;
+}
+
+.btn-back {
+    background: transparent;
+    color: #777777;
+    border: 2px solid #DDDDDD;
+    box-shadow: none;
+}
+
+.btn-back:hover {
+    background: #FAFAFA;
+    color: #333333;
+    border-color: #FFA94D;
+}
+
+/* Адаптивность для order */
+@media (max-width: 768px) {
+    .order-header {
+        flex-direction: column;
+    }
+    
+    .order-title-large {
+        font-size: 1.8rem;
+    }
+    
+    .order-price-large {
+        width: 100%;
+        font-size: 1.5rem;
+        padding: 0.8rem 1.5rem;
+    }
+    
+    .order-image-large {
+        height: 300px;
+    }
+    
+    .order-info {
+        padding: 1.5rem;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .action-buttons .btn {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .order-meta-details {
+        grid-template-columns: 1fr;
+    }
+    
+    .contact-details {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .meta-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .meta-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+    
+    .order-title-large {
+        font-size: 1.6rem;
+    }
+}

@@ -1,1371 +1,295 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Личный кабинет | Халтурка.ру</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: #FAFAFA;
-            color: #333333;
-            line-height: 1.6;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        /* Шапка - ОБНОВЛЕНА КАК В INDEX.HTML */
-        .header {
-            background-color: #FAFAFA;
-            padding: 1rem 0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
-            border-bottom: 1px solid #EEEEEE;
-            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            transform: translateY(0);
-        }
-
-        .header.hidden {
-            transform: translateY(-100%);
-        }
-
-        .header .container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #FF8C00;
-            text-decoration: none;
-        }
-
-        .main-nav {
-            display: flex;
-            gap: 1.5rem;
-        }
-
-        .nav-link {
-            color: #333333;
-            text-decoration: none;
-            font-weight: 600;
-            padding: 0.5rem 1rem;
-            border-radius: 0;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 1rem;
-            position: relative;
-            background-color: transparent !important;
-            width: 130px;
-            height: 45px;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .nav-text {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-            transform-origin: center;
-        }
-
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 3px;
-            background: linear-gradient(135deg, #FFD166, #FFA94D);
-            transition: width 0.3s ease;
-            border-radius: 2px;
-        }
-
-        .nav-link:hover .nav-text,
-        .nav-link.active .nav-text {
-            transform: scale(1.1);
-        }
-
-        .nav-link:hover::after,
-        .nav-link.active::after {
-            width: 90%;
-        }
-
-        .nav-link.active {
-            font-weight: 700;
-        }
-
-        /* Мобильная кнопка меню */
-        .mobile-menu-btn {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 24px;
-            color: #FF8C00;
-            cursor: pointer;
-            padding: 5px;
-        }
-
-        /* Основной контент */
-        .main-content {
-            padding: 5rem 0 3rem;
-            flex: 1;
-        }
-
-        h1 {
-            font-size: 2.8rem;
-            margin-bottom: 1.5rem;
-            color: #333333;
-            font-weight: 800;
-        }
-
-        .page-description {
-            color: #666666;
-            margin-bottom: 2rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid #EEEEEE;
-            font-size: 1.2rem;
-        }
-
-        /* Основной макет личного кабинета */
-        .profile-layout {
-            display: grid;
-            grid-template-columns: 250px 1fr;
-            gap: 2rem;
-        }
-
-        /* Боковая панель профиля */
-        .profile-sidebar {
-            background: #FFFFFF;
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            border: 1px solid #EEEEEE;
-            height: fit-content;
-        }
-
-        .profile-header {
-            text-align: center;
-            margin-bottom: 2rem;
-            position: relative;
-        }
-
-        .profile-avatar-container {
-            position: relative;
-            width: 120px;
-            height: 120px;
-            margin: 0 auto 1rem;
-        }
-
-        .profile-avatar {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid #FFD166;
-            background-color: #FAFAFA;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #FF8C00;
-            font-size: 3rem;
-        }
-
-        .profile-avatar-edit {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            background: #FFA94D;
-            color: white;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            border: 2px solid white;
-            transition: all 0.3s ease;
-        }
-
-        .profile-avatar-edit:hover {
-            background: #FF8C00;
-            transform: scale(1.1);
-        }
-
-        .profile-name {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            color: #333333;
-        }
-
-        .profile-role {
-            color: #666666;
-            font-size: 0.9rem;
-            padding: 0.3rem 1rem;
-            background-color: rgba(255, 169, 77, 0.1);
-            border-radius: 20px;
-            display: inline-block;
-            margin-bottom: 0.5rem;
-        }
-
-        .profile-telegram {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            color: #0088cc;
-            font-size: 0.9rem;
-            margin-top: 0.5rem;
-        }
-
-        .profile-telegram i {
-            font-size: 1.1rem;
-        }
-
-        .profile-balance {
-            background: linear-gradient(135deg, #FFD166, #FFA94D);
-            padding: 1rem;
-            border-radius: 10px;
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .balance-label {
-            font-size: 0.9rem;
-            color: #666666;
-            margin-bottom: 0.3rem;
-        }
-
-        .balance-amount {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: #333333;
-        }
-
-        .profile-menu {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .profile-menu-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 0.9rem 1rem;
-            border-radius: 8px;
-            text-decoration: none;
-            color: #555555;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            border: 1px solid transparent;
-        }
-
-        .profile-menu-item:hover {
-            background-color: rgba(255, 169, 77, 0.1);
-            border-color: #FFD166;
-            color: #333333;
-            transform: translateX(5px);
-        }
-
-        .profile-menu-item.active {
-            background-color: rgba(255, 169, 77, 0.15);
-            border-color: #FFA94D;
-            color: #333333;
-        }
-
-        .profile-menu-item i {
-            color: #FFA94D;
-            width: 20px;
-            text-align: center;
-        }
-
-        /* Кнопка добавления заказа в сайдбаре */
-        .add-order-sidebar {
-            margin-top: 1.5rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid #EEEEEE;
-        }
-
-        .add-order-sidebar-btn {
-            width: 100%;
-            padding: 0.9rem;
-            background: linear-gradient(135deg, #7ED957, #A8E6CF);
-            color: #2E7D32;
-            border: none;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .add-order-sidebar-btn:hover {
-            background: linear-gradient(135deg, #5ECF4D, #97D9B4);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(94, 207, 77, 0.3);
-        }
-
-        /* Основное содержимое профиля */
-        .profile-content {
-            background: #FFFFFF;
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            border: 1px solid #EEEEEE;
-        }
-
-        .profile-section {
-            margin-bottom: 2.5rem;
-        }
-
-        .profile-section:last-child {
-            margin-bottom: 0;
-        }
-
-        .profile-section h2 {
-            font-size: 1.6rem;
-            color: #333333;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.8rem;
-            border-bottom: 2px solid #FFD166;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .profile-section h2 i {
-            color: #FFA94D;
-        }
-
-        /* Форма редактирования профиля */
-        .profile-form {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 0.6rem;
-            font-weight: 600;
-            color: #444444;
-            font-size: 1rem;
-        }
-
-        .form-label i {
-            color: #FFA94D;
-            margin-right: 8px;
-            width: 20px;
-            text-align: center;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.9rem 1.2rem;
-            border: 1px solid #DDDDDD;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            background-color: #FAFAFA;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: #FFA94D;
-            box-shadow: 0 0 0 3px rgba(255, 169, 77, 0.2);
-            background-color: #FFFFFF;
-        }
-
-        /* Загрузка аватара в форме */
-        .avatar-upload-container {
-            grid-column: 1 / -1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .avatar-upload {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-            width: 100%;
-            max-width: 300px;
-        }
-
-        .avatar-preview {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            overflow: hidden;
-            border: 4px solid #FFD166;
-            margin-bottom: 0.5rem;
-        }
-
-        .avatar-preview img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .avatar-upload-btn {
-            padding: 0.8rem 1.5rem;
-            background: linear-gradient(135deg, #FFD166, #FFA94D);
-            color: #333333;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .avatar-upload-btn:hover {
-            background: linear-gradient(135deg, #FFC043, #FF8C00);
-            transform: translateY(-2px);
-        }
-
-        .avatar-upload-hint {
-            font-size: 0.9rem;
-            color: #777777;
-            text-align: center;
-            margin-top: 0.5rem;
-        }
-
-        #avatarInput {
-            display: none;
-        }
-
-        /* Мои заказы - без статусов */
-        .orders-tabs {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            border-bottom: 1px solid #EEEEEE;
-            padding-bottom: 0.5rem;
-        }
-
-        .tab-btn {
-            padding: 0.8rem 1.5rem;
-            background: none;
-            border: none;
-            border-radius: 8px 8px 0 0;
-            font-weight: 600;
-            color: #777777;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .tab-btn.active {
-            color: #333333;
-            background-color: rgba(255, 169, 77, 0.1);
-        }
-
-        .tab-btn.active::after {
-            content: '';
-            position: absolute;
-            bottom: -0.5rem;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(135deg, #FFD166, #FFA94D);
-            border-radius: 2px;
-        }
-
-        .orders-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .order-item {
-            display: block;
-            padding: 1.5rem;
-            border: 1px solid #EEEEEE;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .order-item:hover {
-            border-color: #FFD166;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-            transform: translateY(-2px);
-        }
-
-        .order-info h3 {
-            font-size: 1.2rem;
-            margin-bottom: 0.8rem;
-            color: #333333;
-        }
-
-        .order-meta {
-            display: flex;
-            gap: 1.5rem;
-            color: #777777;
-            font-size: 0.95rem;
-        }
-
-        .order-meta span {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .order-meta i {
-            color: #FFA94D;
-        }
-
-        /* Пустой список */
-        .empty-list {
-            text-align: center;
-            padding: 3rem;
-            color: #777777;
-        }
-
-        .empty-list i {
-            font-size: 3rem;
-            color: #DDDDDD;
-            margin-bottom: 1rem;
-        }
-
-        .empty-list p {
-            margin-bottom: 1.5rem;
-        }
-
-        /* Кнопки */
-        .btn {
-            padding: 0.9rem 2rem;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #7ED957, #A8E6CF);
-            color: #2E7D32;
-            box-shadow: 0 2px 8px rgba(126, 217, 87, 0.3);
-        }
-
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #5ECF4D, #97D9B4);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(94, 207, 77, 0.4);
-            color: #1B5E20;
-        }
-
-        .btn-secondary {
-            background: linear-gradient(135deg, #FFD166, #FFA94D);
-            color: #333333;
-            box-shadow: 0 2px 8px rgba(255, 166, 0, 0.3);
-        }
-
-        .btn-secondary:hover {
-            background: linear-gradient(135deg, #FFC043, #FF8C00);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(255, 166, 0, 0.4);
-        }
-
-        .form-actions {
-            display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
-            grid-column: 1 / -1;
-        }
-
-        /* Подвал */
-        .footer {
-            background-color: #FAFAFA;
-            color: #333333;
-            padding: 3rem 0;
-            margin-top: auto;
-            text-align: center;
-            border-top: 1px solid #EEEEEE;
-        }
-
-        .footer .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.5rem;
-        }
-
-        .footer p {
-            font-size: 1.2rem;
-            font-weight: 600;
-        }
-
-        .footer-email {
-            font-size: 1.2rem;
-            color: #FF8C00;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-
-        .footer-email:hover {
-            color: #FF8C00;
-            transform: translateY(-2px);
-        }
-
-        .footer-email i {
-            font-size: 1.4rem;
-        }
-
-        /* Адаптивность - ОБНОВЛЕНА */
-        @media (max-width: 992px) {
-            .profile-layout {
-                grid-template-columns: 1fr;
-            }
-            
-            .profile-sidebar {
-                order: 2;
-            }
-            
-            .profile-content {
-                order: 1;
-            }
-        }
-
-        @media (max-width: 768px) {
-            /* Мобильное меню */
-            .mobile-menu-btn {
-                display: block;
-            }
-            
-            .main-nav {
-                position: fixed;
-                top: 70px;
-                left: 0;
-                width: 100%;
-                background: #FAFAFA;
-                flex-direction: column;
-                padding: 20px;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-                transform: translateY(-150%);
-                transition: transform 0.3s;
-                z-index: 999;
-                gap: 0;
-            }
-            
-            .main-nav.active {
-                transform: translateY(0);
-            }
-            
-            .nav-link {
-                padding: 12px 0;
-                justify-content: center;
-                width: 100%;
-                height: auto;
-                border-bottom: 1px solid #EEEEEE;
-            }
-            
-            .nav-link:last-child {
-                border-bottom: none;
-            }
-            
-            .nav-text {
-                justify-content: center;
-            }
-            
-            .profile-form {
-                grid-template-columns: 1fr;
-            }
-            
-            .order-meta {
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-            
-            .orders-tabs {
-                flex-wrap: wrap;
-            }
-            
-            .tab-btn {
-                flex: 1;
-                text-align: center;
-            }
-            
-            h1 {
-                font-size: 2.2rem;
-            }
-            
-            .logo {
-                font-size: 1.6rem;
-            }
-            
-            .main-content {
-                padding: 6rem 0 2rem;
-            }
-            
-            .footer-email {
-                font-size: 1rem;
-            }
-            
-            .form-actions {
-                flex-direction: column;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .nav-link {
-                width: 85px;
-                font-size: 0.9rem;
-            }
-            
-            .profile-sidebar,
-            .profile-content {
-                padding: 1.5rem;
-            }
-            
-            .profile-avatar-container {
-                width: 100px;
-                height: 100px;
-            }
-            
-            .order-meta {
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- Шапка - ОБНОВЛЕНА КАК В INDEX.HTML -->
-    <header class="header" id="mainHeader">
-        <div class="container">
-            <a href="/" class="logo">
-                Халтурка.ру
-            </a>
-            
-            <!-- Кнопка мобильного меню -->
-            <button class="mobile-menu-btn" id="mobileMenuBtn">
-                <i class="fas fa-bars"></i>
-            </button>
-            
-            <!-- Навигация -->
-            <nav class="main-nav" id="mainNav">
-                <a href="/" class="nav-link">
-                    <span class="nav-text">
-                        <i class="fas fa-home"></i> Главная
-                    </span>
-                </a>
-                <a href="#" class="nav-link">
-                    <span class="nav-text">
-                        <i class="fas fa-wallet"></i> Баланс
-                    </span>
-                </a>
-                <a href="profile.html" class="nav-link active">
-                    <span class="nav-text">
-                        <i class="fas fa-user"></i> Войти
-                    </span>
-                </a>
-            </nav>
+{% extends "WEBSITE/base.html" %}
+{% load static %}
+
+{% block title %}Личный кабинет | Халтурка.ру{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'WEBSITE/css/personal_account.css' %}">
+{% endblock %}
+
+{% block content %}
+<h1>Личный кабинет</h1>
+<p class="page-description">Управление вашими заказами и профилем</p>
+
+<div class="profile-layout">
+    <!-- Боковая панель профиля -->
+    <aside class="profile-sidebar">
+        <div class="profile-header">
+            <div class="profile-avatar-container">
+                <div class="profile-avatar" id="sidebarAvatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="profile-avatar-edit" id="avatarEditBtn">
+                    <i class="fas fa-camera"></i>
+                </div>
+            </div>
+            <h2 class="profile-name" id="sidebarName">Иван Иванов</h2>
+            <div class="profile-role">Заказчик</div>
+            <div class="profile-telegram" id="sidebarTelegram">
+                <i class="fab fa-telegram"></i>
+                <span>@ivan_ivanov</span>
+            </div>
         </div>
-    </header>
-
-    <!-- Основной контент -->
-    <main class="container main-content">
-        <h1>Личный кабинет</h1>
-        <p class="page-description">Управление вашими заказами и профилем</p>
         
-        <div class="profile-layout">
-            <!-- Боковая панель профиля -->
-            <aside class="profile-sidebar">
-                <div class="profile-header">
-                    <div class="profile-avatar-container">
-                        <div class="profile-avatar" id="sidebarAvatar">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div class="profile-avatar-edit" onclick="document.getElementById('avatarInput').click()">
-                            <i class="fas fa-camera"></i>
-                        </div>
+        <div class="profile-balance">
+            <div class="balance-label">Баланс для заказов</div>
+            <div class="balance-amount">15 750 ₽</div>
+        </div>
+        
+        <nav class="profile-menu">
+            <a href="#profile" class="profile-menu-item active" data-section="profile">
+                <i class="fas fa-user-circle"></i>
+                <span>Мой профиль</span>
+            </a>
+            <a href="#orders" class="profile-menu-item" data-section="orders">
+                <i class="fas fa-list-alt"></i>
+                <span>Мои заказы</span>
+            </a>
+            <a href="#balance" class="profile-menu-item" data-section="balance">
+                <i class="fas fa-wallet"></i>
+                <span>Пополнить баланс</span>
+            </a>
+        </nav>
+        
+        <div class="add-order-sidebar">
+            <button class="add-order-sidebar-btn" id="addOrderSidebarBtn">
+                <i class="fas fa-plus"></i> Создать заказ
+            </button>
+        </div>
+    </aside>
+    
+    <!-- Основное содержимое профиля -->
+    <div class="profile-content">
+        <!-- Раздел: Редактирование профиля -->
+        <div id="profile" class="profile-section active-section">
+            <h2><i class="fas fa-user-edit"></i> Редактирование профиля</h2>
+            
+            <!-- Загрузка аватара -->
+            <div class="avatar-upload-container">
+                <div class="avatar-upload">
+                    <div class="avatar-preview" id="avatarPreview">
+                        <img id="previewImage" src="" alt="Предпросмотр аватара" style="display: none;">
                     </div>
-                    <h2 class="profile-name" id="sidebarName">Иван Иванов</h2>
-                    <div class="profile-role">Заказчик</div>
-                    <div class="profile-telegram" id="sidebarTelegram">
-                        <i class="fab fa-telegram"></i>
-                        <span>@ivan_ivanov</span>
+                    <button type="button" class="avatar-upload-btn" id="avatarUploadBtn">
+                        <i class="fas fa-camera"></i> Изменить фото профиля
+                    </button>
+                    <input type="file" id="avatarInput" accept="image/*" style="display: none;">
+                    <p class="avatar-upload-hint">
+                        <i class="fas fa-info-circle"></i> Рекомендуемый размер: 300x300 px. Форматы: JPG, PNG, GIF
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Форма профиля -->
+            <form class="profile-form" id="profileForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="profileName">
+                            <i class="fas fa-user"></i> Имя и фамилия
+                        </label>
+                        <input type="text" id="profileName" class="form-control" value="Иван Иванов" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="profileEmail">
+                            <i class="fas fa-envelope"></i> Email
+                        </label>
+                        <input type="email" id="profileEmail" class="form-control" value="ivan@example.com" required>
                     </div>
                 </div>
                 
-                <div class="profile-balance">
-                    <div class="balance-label">Баланс для заказов</div>
-                    <div class="balance-amount">15 750 ₽</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="profilePhone">
+                            <i class="fas fa-phone"></i> Телефон
+                        </label>
+                        <input type="tel" id="profilePhone" class="form-control" value="+7 (999) 123-45-67" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="profileCity">
+                            <i class="fas fa-map-marker-alt"></i> Город
+                        </label>
+                        <input type="text" id="profileCity" class="form-control" value="Москва" required>
+                    </div>
                 </div>
                 
-                <nav class="profile-menu">
-                    <a href="#profile" class="profile-menu-item active">
-                        <i class="fas fa-user-circle"></i>
-                        <span>Мой профиль</span>
-                    </a>
-                    <a href="#orders" class="profile-menu-item">
-                        <i class="fas fa-list-alt"></i>
-                        <span>Мои заказы</span>
-                    </a>
-                    <a href="#balance" class="profile-menu-item">
-                        <i class="fas fa-wallet"></i>
-                        <span>Пополнить баланс</span>
-                    </a>
-                </nav>
+                <div class="form-group full-width">
+                    <label class="form-label" for="profileTelegram">
+                        <i class="fab fa-telegram"></i> Telegram для связи
+                    </label>
+                    <input type="text" id="profileTelegram" class="form-control" value="@ivan_ivanov" placeholder="@username">
+                    <div class="form-hint">
+                        <i class="fas fa-info-circle"></i> Укажите ваш Telegram username для быстрой связи с исполнителями
+                    </div>
+                </div>
                 
-                <div class="add-order-sidebar">
-                    <button class="add-order-sidebar-btn" onclick= window.location.href='/add_order/'>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Сохранить изменения
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="resetFormBtn">
+                        <i class="fas fa-times"></i> Отмена
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Раздел: Мои заказы -->
+        <div id="orders" class="profile-section">
+            <h2><i class="fas fa-list-alt"></i> Мои заказы</h2>
+            
+            <div class="orders-tabs">
+                <button class="tab-btn active" data-tab="active">Активные</button>
+                <button class="tab-btn" data-tab="completed">Завершенные</button>
+                <button class="tab-btn" data-tab="draft">Черновики</button>
+            </div>
+            
+            <!-- Активные заказы -->
+            <div class="orders-list" id="active-orders">
+                <a href="{% url 'order_view' %}" class="order-item">
+                    <div class="order-info">
+                        <h3>Ремонт ноутбука Dell</h3>
+                        <div class="order-meta">
+                            <span><i class="fas fa-ruble-sign"></i> 3 500 ₽</span>
+                            <span><i class="fas fa-map-marker-alt"></i> Москва, Центр</span>
+                            <span><i class="far fa-calendar-alt"></i> Срок: 20.12.2023</span>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="{% url 'order_view' %}" class="order-item">
+                    <div class="order-info">
+                        <h3>Дизайн логотипа для кафе</h3>
+                        <div class="order-meta">
+                            <span><i class="fas fa-ruble-sign"></i> 8 000 ₽</span>
+                            <span><i class="fas fa-map-marker-alt"></i> Удаленно</span>
+                            <span><i class="far fa-calendar-alt"></i> Срок: 25.12.2023</span>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="{% url 'order_view' %}" class="order-item">
+                    <div class="order-info">
+                        <h3>Установка Windows на ПК</h3>
+                        <div class="order-meta">
+                            <span><i class="fas fa-ruble-sign"></i> 2 000 ₽</span>
+                            <span><i class="fas fa-map-marker-alt"></i> Москва, САО</span>
+                            <span><i class="far fa-calendar-alt"></i> Срок: 18.12.2023</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            <!-- Завершенные заказы -->
+            <div class="orders-list" id="completed-orders" style="display: none;">
+                <a href="{% url 'order_view' %}" class="order-item">
+                    <div class="order-info">
+                        <h3>Ремонт холодильника</h3>
+                        <div class="order-meta">
+                            <span><i class="fas fa-ruble-sign"></i> 4 200 ₽</span>
+                            <span><i class="fas fa-map-marker-alt"></i> Москва, ЮАО</span>
+                            <span><i class="far fa-calendar-alt"></i> Завершен: 10.12.2023</span>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="{% url 'order_view' %}" class="order-item">
+                    <div class="order-info">
+                        <h3>Уборка квартиры</h3>
+                        <div class="order-meta">
+                            <span><i class="fas fa-ruble-sign"></i> 3 000 ₽</span>
+                            <span><i class="fas fa-map-marker-alt"></i> Москва, СЗАО</span>
+                            <span><i class="far fa-calendar-alt"></i> Завершен: 05.12.2023</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            <!-- Черновики -->
+            <div class="orders-list" id="draft-orders" style="display: none;">
+                <a href="{% url 'add_order_view' %}" class="order-item">
+                    <div class="order-info">
+                        <h3>Ремонт телевизора Samsung</h3>
+                        <div class="order-meta">
+                            <span><i class="fas fa-ruble-sign"></i> 6 000 ₽</span>
+                            <span><i class="fas fa-map-marker-alt"></i> Москва, ВАО</span>
+                            <span><i class="far fa-calendar-alt"></i> Черновик</span>
+                        </div>
+                    </div>
+                </a>
+                
+                <div class="empty-list" id="empty-draft" style="display: none;">
+                    <i class="fas fa-file"></i>
+                    <p>У вас нет черновиков</p>
+                    <button class="btn btn-secondary" id="createOrderFromEmptyBtn">
                         <i class="fas fa-plus"></i> Создать заказ
                     </button>
                 </div>
-            </aside>
+            </div>
+        </div>
+        
+        <!-- Раздел: Пополнение баланса -->
+        <div id="balance" class="profile-section">
+            <h2><i class="fas fa-wallet"></i> Пополнение баланса</h2>
             
-            <!-- Основное содержимое профиля -->
-            <div class="profile-content">
-                <!-- Раздел: Редактирование профиля -->
-                <div id="profile" class="profile-section">
-                    <h2><i class="fas fa-user-edit"></i> Редактирование профиля</h2>
-                    
-                    <!-- Загрузка аватара -->
-                    <div class="avatar-upload-container">
-                        <div class="avatar-upload">
-                            <div class="avatar-preview" id="avatarPreview">
-                                <img id="previewImage" src="" alt="Предпросмотр аватара">
-                            </div>
-                            <button type="button" class="avatar-upload-btn" onclick="document.getElementById('avatarInput').click()">
-                                <i class="fas fa-camera"></i> Изменить фото профиля
-                            </button>
-                            <input type="file" id="avatarInput" accept="image/*" style="display: none;" onchange="previewAvatar(event)">
-                            <p class="avatar-upload-hint">
-                                <i class="fas fa-info-circle"></i> Рекомендуемый размер: 300x300 px. Форматы: JPG, PNG, GIF
-                            </p>
-                        </div>
+            <div class="balance-container">
+                <div class="balance-info">
+                    <div class="current-balance">
+                        Текущий баланс: <strong>15 750 ₽</strong>
                     </div>
-                    
-                    <!-- Форма профиля -->
-                    <form class="profile-form" id="profileForm">
-                        <div class="form-group">
-                            <label class="form-label" for="profileName">
-                                <i class="fas fa-user"></i> Имя и фамилия
-                            </label>
-                            <input type="text" id="profileName" class="form-control" value="Иван Иванов" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label" for="profileEmail">
-                                <i class="fas fa-envelope"></i> Email
-                            </label>
-                            <input type="email" id="profileEmail" class="form-control" value="ivan@example.com" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label" for="profilePhone">
-                                <i class="fas fa-phone"></i> Телефон
-                            </label>
-                            <input type="tel" id="profilePhone" class="form-control" value="+7 (999) 123-45-67" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label" for="profileCity">
-                                <i class="fas fa-map-marker-alt"></i> Город
-                            </label>
-                            <input type="text" id="profileCity" class="form-control" value="Москва" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label" for="profileTelegram">
-                                <i class="fab fa-telegram"></i> Telegram для связи
-                            </label>
-                            <input type="text" id="profileTelegram" class="form-control" value="@ivan_ivanov" placeholder="@username">
-                            <div class="avatar-upload-hint" style="text-align: left; margin-top: 0.5rem;">
-                                <i class="fas fa-info-circle"></i> Укажите ваш Telegram username для быстрой связи с исполнителями
-                            </div>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Сохранить изменения
-                            </button>
-                            <button type="button" class="btn btn-secondary" onclick="resetForm()">
-                                <i class="fas fa-times"></i> Отмена
-                            </button>
-                        </div>
-                    </form>
                 </div>
                 
-                <!-- Раздел: Мои заказы (без статусов) -->
-                <div id="orders" class="profile-section" style="display: none;">
-                    <h2><i class="fas fa-list-alt"></i> Мои заказы</h2>
-                    
-                    <div class="orders-tabs">
-                        <button class="tab-btn active" data-tab="active">Активные</button>
-                        <button class="tab-btn" data-tab="completed">Завершенные</button>
-                        <button class="tab-btn" data-tab="draft">Черновики</button>
+                <div class="balance-selection">
+                    <h3>Выберите сумму</h3>
+                    <div class="balance-grid">
+                        <button type="button" class="balance-option-btn" data-amount="1000">1 000 ₽</button>
+                        <button type="button" class="balance-option-btn" data-amount="3000">3 000 ₽</button>
+                        <button type="button" class="balance-option-btn" data-amount="5000">5 000 ₽</button>
+                        <button type="button" class="balance-option-btn" data-amount="10000">10 000 ₽</button>
+                        <button type="button" class="balance-option-btn" data-amount="15000">15 000 ₽</button>
+                        <button type="button" class="balance-option-btn" data-amount="20000">20 000 ₽</button>
                     </div>
                     
-                    <!-- Активные заказы -->
-                    <div class="orders-list" id="active-orders">
-                        <div class="order-item" onclick="showOrderDetails('Ремонт ноутбука Dell')">
-                            <div class="order-info">
-                                <h3>Ремонт ноутбука Dell</h3>
-                                <div class="order-meta">
-                                    <span><i class="fas fa-ruble-sign"></i> 3 500 ₽</span>
-                                    <span><i class="fas fa-map-marker-alt"></i> Москва, Центр</span>
-                                    <span><i class="far fa-calendar-alt"></i> Срок: 20.12.2023</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="order-item" onclick="showOrderDetails('Дизайн логотипа для кафе')">
-                            <div class="order-info">
-                                <h3>Дизайн логотипа для кафе</h3>
-                                <div class="order-meta">
-                                    <span><i class="fas fa-ruble-sign"></i> 8 000 ₽</span>
-                                    <span><i class="fas fa-map-marker-alt"></i> Удаленно</span>
-                                    <span><i class="far fa-calendar-alt"></i> Срок: 25.12.2023</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="order-item" onclick="showOrderDetails('Установка Windows на ПК')">
-                            <div class="order-info">
-                                <h3>Установка Windows на ПК</h3>
-                                <div class="order-meta">
-                                    <span><i class="fas fa-ruble-sign"></i> 2 000 ₽</span>
-                                    <span><i class="fas fa-map-marker-alt"></i> Москва, САО</span>
-                                    <span><i class="far fa-calendar-alt"></i> Срок: 18.12.2023</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Завершенные заказы -->
-                    <div class="orders-list" id="completed-orders" style="display: none;">
-                        <div class="order-item" onclick="showOrderDetails('Ремонт холодильника')">
-                            <div class="order-info">
-                                <h3>Ремонт холодильника</h3>
-                                <div class="order-meta">
-                                    <span><i class="fas fa-ruble-sign"></i> 4 200 ₽</span>
-                                    <span><i class="fas fa-map-marker-alt"></i> Москва, ЮАО</span>
-                                    <span><i class="far fa-calendar-alt"></i> Завершен: 10.12.2023</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="order-item" onclick="showOrderDetails('Уборка квартиры')">
-                            <div class="order-info">
-                                <h3>Уборка квартиры</h3>
-                                <div class="order-meta">
-                                    <span><i class="fas fa-ruble-sign"></i> 3 000 ₽</span>
-                                    <span><i class="fas fa-map-marker-alt"></i> Москва, СЗАО</span>
-                                    <span><i class="far fa-calendar-alt"></i> Завершен: 05.12.2023</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Черновики -->
-                    <div class="orders-list" id="draft-orders" style="display: none;">
-                        <div class="order-item" onclick="editDraft('Ремонт телевизора Samsung')">
-                            <div class="order-info">
-                                <h3>Ремонт телевизора Samsung</h3>
-                                <div class="order-meta">
-                                    <span><i class="fas fa-ruble-sign"></i> 6 000 ₽</span>
-                                    <span><i class="fas fa-map-marker-alt"></i> Москва, ВАО</span>
-                                    <span><i class="far fa-calendar-alt"></i> Черновик</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="empty-list" id="empty-draft" style="display: none;">
-                            <i class="fas fa-file"></i>
-                            <p>У вас нет черновиков</p>
-                            <button class="btn btn-secondary" onclick="window.location.href='add_order.html'">
-                                <i class="fas fa-plus"></i> Создать заказ
-                            </button>
+                    <div class="form-group">
+                        <label class="form-label" for="customAmount">
+                            <i class="fas fa-pen"></i> Другая сумма
+                        </label>
+                        <input type="number" id="customAmount" class="form-control" placeholder="Введите сумму в рублях" min="100" step="100">
+                        <div class="form-hint">
+                            <i class="fas fa-info-circle"></i> Минимальная сумма: 100 ₽
                         </div>
                     </div>
                 </div>
                 
-                <!-- Раздел: Пополнение баланса -->
-                <div id="balance" class="profile-section" style="display: none;">
-                    <h2><i class="fas fa-wallet"></i> Пополнение баланса</h2>
-                    
-                    <div style="max-width: 500px; margin: 0 auto;">
-                        <div style="text-align: center; margin-bottom: 2rem;">
-                            <div style="font-size: 1.2rem; margin-bottom: 1rem; color: #666666;">
-                                Текущий баланс: <strong style="color: #333333; font-size: 1.5rem;">15 750 ₽</strong>
-                            </div>
-                        </div>
-                        
-                        <div style="margin-bottom: 2rem;">
-                            <h3 style="margin-bottom: 1rem; font-size: 1.2rem;">Выберите сумму</h3>
-                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
-                                <button class="btn btn-secondary" onclick="selectAmount(1000)" style="padding: 0.8rem;">1 000 ₽</button>
-                                <button class="btn btn-secondary" onclick="selectAmount(3000)" style="padding: 0.8rem;">3 000 ₽</button>
-                                <button class="btn btn-secondary" onclick="selectAmount(5000)" style="padding: 0.8rem;">5 000 ₽</button>
-                                <button class="btn btn-secondary" onclick="selectAmount(10000)" style="padding: 0.8rem;">10 000 ₽</button>
-                                <button class="btn btn-secondary" onclick="selectAmount(15000)" style="padding: 0.8rem;">15 000 ₽</button>
-                                <button class="btn btn-secondary" onclick="selectAmount(20000)" style="padding: 0.8rem;">20 000 ₽</button>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label class="form-label" for="customAmount">
-                                    <i class="fas fa-pen"></i> Другая сумма
-                                </label>
-                                <input type="number" id="customAmount" class="form-control" placeholder="Введите сумму в рублях" min="100" step="100">
-                            </div>
-                        </div>
-                        
-                        <div style="text-align: center;">
-                            <button class="btn btn-primary" onclick="processPayment()" style="width: 100%; padding: 1rem;">
-                                <i class="fas fa-credit-card"></i> Пополнить баланс
-                            </button>
-                            <p style="color: #777777; font-size: 0.9rem; margin-top: 1rem;">
-                                После нажатия кнопки вы будете перенаправлены на безопасную страницу оплаты
-                            </p>
-                        </div>
-                    </div>
+                <div class="balance-payment">
+                    <button class="btn btn-primary" id="processPaymentBtn">
+                        <i class="fas fa-credit-card"></i> Пополнить баланс
+                    </button>
+                    <p class="payment-hint">
+                        После нажатия кнопки вы будете перенаправлены на безопасную страницу оплаты
+                    </p>
                 </div>
             </div>
         </div>
-    </main>
+    </div>
+</div>
+{% endblock %}
 
-    <!-- Подвал -->
-    <footer class="footer">
-        <div class="container">
-            <p>© 2025 Халтурка.ру - площадка для заказов и услуг</p>
-            <a href="mailto:example@mail.ru" class="footer-email">
-                <i class="fas fa-envelope"></i> example@mail.ru
-            </a>
-        </div>
-    </footer>
-
-    <script>
-        // Скрипт для автоматического скрытия/показа шапки при прокрутке
-        let lastScrollTop = 0;
-        const header = document.getElementById('mainHeader');
-        const scrollThreshold = 60;
-        
-        window.addEventListener('scroll', function() {
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            
-            if (scrollTop > lastScrollTop && scrollTop > scrollThreshold) {
-                header.classList.add('hidden');
-            } 
-            else if (scrollTop < lastScrollTop) {
-                header.classList.remove('hidden');
-            }
-            
-            lastScrollTop = scrollTop;
-        });
-
-        // Мобильное меню (как в index.html)
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const mainNav = document.getElementById('mainNav');
-        
-        mobileMenuBtn.addEventListener('click', () => {
-            mainNav.classList.toggle('active');
-            mobileMenuBtn.innerHTML = mainNav.classList.contains('active') 
-                ? '<i class="fas fa-times"></i>' 
-                : '<i class="fas fa-bars"></i>';
-        });
-        
-        // Закрыть мобильное меню при клике на ссылку
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', () => {
-                mainNav.classList.remove('active');
-                mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
-            });
-        });
-
-        // Предпросмотр аватара
-        function previewAvatar(event) {
-            const input = event.target;
-            const preview = document.getElementById('avatarPreview');
-            const previewImage = document.getElementById('previewImage');
-            const sidebarAvatar = document.getElementById('sidebarAvatar');
-            
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    previewImage.src = e.target.result;
-                    previewImage.style.display = 'block';
-                    
-                    // Обновляем аватар в сайдбаре
-                    sidebarAvatar.innerHTML = '';
-                    const sidebarImg = document.createElement('img');
-                    sidebarImg.src = e.target.result;
-                    sidebarImg.alt = 'Аватар';
-                    sidebarImg.style.width = '100%';
-                    sidebarImg.style.height = '100%';
-                    sidebarImg.style.borderRadius = '50%';
-                    sidebarImg.style.objectFit = 'cover';
-                    sidebarAvatar.appendChild(sidebarImg);
-                    
-                    // Сохраняем в localStorage для демонстрации
-                    localStorage.setItem('profileAvatar', e.target.result);
-                }
-                
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        // Загрузка аватара из localStorage при загрузке страницы
-        document.addEventListener('DOMContentLoaded', function() {
-            const savedAvatar = localStorage.getItem('profileAvatar');
-            const previewImage = document.getElementById('previewImage');
-            const sidebarAvatar = document.getElementById('sidebarAvatar');
-            
-            if (savedAvatar) {
-                previewImage.src = savedAvatar;
-                previewImage.style.display = 'block';
-                
-                // Обновляем аватар в сайдбаре
-                sidebarAvatar.innerHTML = '';
-                const sidebarImg = document.createElement('img');
-                sidebarImg.src = savedAvatar;
-                sidebarImg.alt = 'Аватар';
-                sidebarImg.style.width = '100%';
-                sidebarImg.style.height = '100%';
-                sidebarImg.style.borderRadius = '50%';
-                sidebarImg.style.objectFit = 'cover';
-                sidebarAvatar.appendChild(sidebarImg);
-            }
-            
-            // Загружаем сохранённые данные профиля из localStorage
-            const savedName = localStorage.getItem('profileName');
-            const savedTelegram = localStorage.getItem('profileTelegram');
-            
-            if (savedName) {
-                document.getElementById('profileName').value = savedName;
-                document.getElementById('sidebarName').textContent = savedName;
-            }
-            
-            if (savedTelegram) {
-                document.getElementById('profileTelegram').value = savedTelegram;
-                document.getElementById('sidebarTelegram').innerHTML = `<i class="fab fa-telegram"></i><span>${savedTelegram}</span>`;
-            }
-        });
-
-        // Навигация по меню
-        document.querySelectorAll('.profile-menu-item').forEach(item => {
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                // Удаляем активный класс у всех пунктов
-                document.querySelectorAll('.profile-menu-item').forEach(menuItem => {
-                    menuItem.classList.remove('active');
-                });
-                
-                // Добавляем активный класс нажатому пункту
-                this.classList.add('active');
-                
-                // Получаем целевой раздел
-                const targetId = this.getAttribute('href').substring(1);
-                
-                // Скрываем все разделы
-                document.querySelectorAll('.profile-section').forEach(section => {
-                    section.style.display = 'none';
-                });
-                
-                // Показываем целевой раздел
-                if (targetId === 'profile') {
-                    document.getElementById('profile').style.display = 'block';
-                } else if (targetId === 'orders') {
-                    document.getElementById('orders').style.display = 'block';
-                    showTab('active'); // Показываем активные заказы по умолчанию
-                } else if (targetId === 'balance') {
-                    document.getElementById('balance').style.display = 'block';
-                }
-            });
-        });
-
-        // Переключение табов в разделе "Мои заказы"
-        function showTab(tabName) {
-            // Удаляем активный класс у всех кнопок
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // Добавляем активный класс нажатой кнопке
-            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-            
-            // Скрываем все списки заказов
-            document.getElementById('active-orders').style.display = 'none';
-            document.getElementById('completed-orders').style.display = 'none';
-            document.getElementById('draft-orders').style.display = 'none';
-            
-            // Показываем выбранный список
-            document.getElementById(`${tabName}-orders`).style.display = 'flex';
-            
-            // Для черновиков, если их нет, показываем сообщение
-            if (tabName === 'draft') {
-                const draftOrders = document.querySelectorAll('#draft-orders .order-item').length;
-                if (draftOrders === 0) {
-                    document.getElementById('draft-orders').style.display = 'none';
-                    document.getElementById('empty-draft').style.display = 'block';
-                }
-            }
-        }
-
-        // Инициализация табов
-        document.querySelectorAll('.tab-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const tabName = this.getAttribute('data-tab');
-                showTab(tabName);
-            });
-        });
-
-        // Обработка формы редактирования профиля
-        document.getElementById('profileForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Сбор данных из формы
-            const formData = {
-                name: document.getElementById('profileName').value,
-                email: document.getElementById('profileEmail').value,
-                phone: document.getElementById('profilePhone').value,
-                city: document.getElementById('profileCity').value,
-                telegram: document.getElementById('profileTelegram').value
-            };
-            
-            // Валидация
-            if (!formData.name || !formData.email || !formData.phone || !formData.city) {
-                alert('Пожалуйста, заполните все обязательные поля!');
-                return;
-            }
-            
-            // Валидация Telegram (опционально, но должен быть корректный username если указан)
-            if (formData.telegram && !formData.telegram.startsWith('@')) {
-                formData.telegram = '@' + formData.telegram;
-                document.getElementById('profileTelegram').value = formData.telegram;
-            }
-            
-            // Симуляция сохранения данных
-            console.log('Сохраненные данные профиля:', formData);
-            
-            // Сохраняем в localStorage для демонстрации
-            localStorage.setItem('profileName', formData.name);
-            localStorage.setItem('profileTelegram', formData.telegram);
-            
-            // Обновляем данные в сайдбаре
-            document.getElementById('sidebarName').textContent = formData.name;
-            document.getElementById('sidebarTelegram').innerHTML = `<i class="fab fa-telegram"></i><span>${formData.telegram}</span>`;
-            
-            // Показать сообщение об успехе
-            alert('Профиль успешно обновлен!');
-        });
-
-        // Сброс формы
-        function resetForm() {
-            document.getElementById('profileForm').reset();
-            
-            // Восстанавливаем сохранённые значения
-            const savedName = localStorage.getItem('profileName') || 'Иван Иванов';
-            const savedTelegram = localStorage.getItem('profileTelegram') || '@ivan_ivanov';
-            
-            document.getElementById('profileName').value = savedName;
-            document.getElementById('profileTelegram').value = savedTelegram;
-        }
-
-        // Просмотр деталей заказа
-        function showOrderDetails(orderTitle) {
-            console.log('Открываем заказ:', orderTitle);
-            alert(`Заказ: ${orderTitle}\n\nДетальная информация о заказе будет отображена на отдельной странице.`);
-        }
-
-        // Редактирование черновика
-        function editDraft(orderTitle) {
-            console.log('Редактируем черновик:', orderTitle);
-            alert(`Редактирование черновика: ${orderTitle}\n\nВы будете перенаправлены на страницу редактирования заказа.`);
-            // В реальном приложении здесь был бы переход на страницу редактирования
-        }
-
-        // Выбор суммы для пополнения баланса
-        function selectAmount(amount) {
-            document.getElementById('customAmount').value = amount;
-        }
-
-        // Обработка пополнения баланса
-        function processPayment() {
-            const customAmount = document.getElementById('customAmount').value;
-            const amount = customAmount ? parseInt(customAmount) : 0;
-            
-            if (amount < 100) {
-                alert('Минимальная сумма пополнения - 100 рублей');
-                return;
-            }
-            
-            console.log('Пополнение баланса на сумму:', amount);
-            alert(`Перенаправление на страницу оплаты ${amount} рублей...\n\nВ реальном приложении здесь будет подключение к платежной системе.`);
-            
-            // Сброс поля
-            document.getElementById('customAmount').value = '';
-        }
-
-        // Инициализация при загрузке страницы
-        document.addEventListener('DOMContentLoaded', function() {
-            // Показываем раздел профиля по умолчанию
-            document.getElementById('profile').style.display = 'block';
-        });
-    </script>
-
-</body>
-</html>
+{% block extra_js %}
+<script src="{% static 'WEBSITE/js/personal_account.js' %}"></script>
+<script>
+    // URL-адреса для кнопок
+    const addOrderUrl = "{% url 'add_order_view' %}";
+    const orderDetailUrl = "{% url 'order_view' %}";
+    
+    // Обработчики для кнопок навигации
+    document.getElementById('addOrderSidebarBtn').addEventListener('click', function() {
+        window.location.href = addOrderUrl;
+    });
+    
+    document.getElementById('createOrderFromEmptyBtn')?.addEventListener('click', function() {
+        window.location.href = addOrderUrl;
+    });
+</script>
+{% endblock %}
