@@ -125,25 +125,36 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 })
                 .then(response => {
+                    // Если произошел редирект, просто следуем за ним
                     if (response.redirected) {
                         window.location.href = response.url;
                         return;
                     }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data && data.success) {
-                        alert('✅ Заказ успешно опубликован!');
-                        setTimeout(() => {
-                            window.location.href = '/';
-                        }, 1500);
-                    } else if (data && data.errors) {
-                        alert('Ошибки:\n\n' + data.errors.join('\n'));
+                    
+                    // Проверяем Content-Type ответа
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        return response.json().then(data => {
+                            if (data && data.success) {
+                                alert('✅ Заказ успешно опубликован!');
+                                setTimeout(() => {
+                                    window.location.href = '/';
+                                }, 1500);
+                            } else if (data && data.errors) {
+                                alert('Ошибки:\n\n' + data.errors.join('\n'));
+                            }
+                        });
+                    } else {
+                        // Если это не JSON, пробуем получить текст
+                        return response.text().then(text => {
+                            console.log('Не-JSON ответ:', text.substring(0, 200));
+                            alert('Сервер вернул неожиданный ответ. Пожалуйста, попробуйте снова.');
+                        });
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Ошибка при публикации заказа');
+                    alert('Ошибка при публикации заказа. Проверьте подключение к интернету.');
                 })
                 .finally(() => {
                     submitBtn.innerHTML = originalText;
