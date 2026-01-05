@@ -125,40 +125,82 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 })
                 .then(response => {
-                    // Если произошел редирект, просто следуем за ним
+                    // Проверяем, является ли ответ перенаправлением
                     if (response.redirected) {
+                        // Если есть редирект, следуем ему
                         window.location.href = response.url;
-                        return;
+                        return Promise.reject('redirected'); // Завершаем цепочку
                     }
                     
-                    // Проверяем Content-Type ответа
-                    const contentType = response.headers.get('content-type');
-                    if (contentType && contentType.includes('application/json')) {
-                        return response.json().then(data => {
-                            if (data && data.success) {
-                                alert('✅ Заказ успешно опубликован!');
-                                setTimeout(() => {
-                                    window.location.href = '/';
-                                }, 1500);
-                            } else if (data && data.errors) {
-                                alert('Ошибки:\n\n' + data.errors.join('\n'));
+                    // Пробуем получить текст ответа
+                    return response.text();
+                })
+                .then(text => {
+                    // Пробуем распарсить как JSON
+                    try {
+                        const data = JSON.parse(text);
+                        if (data && data.success) {
+                            alert('✅ Заказ успешно опубликован!');
+                            setTimeout(() => {
+                                window.location.href = '/';
+                            }, 1500);
+                        } else if (data && data.errors) {
+                            alert('Ошибки:\n\n' + data.errors.join('\n'));
+                        }
+                    } catch (e) {
+                        // Если это не JSON, значит это HTML страница
+                        // Это может быть страница с ошибками валидации или успешной отправкой
+                        
+                        // Проверяем, есть ли в ответе сообщения об ошибках (если сервер возвращает HTML с ошибками)
+                        if (text.includes('alert-danger') || text.includes('error') || text.includes('Ошибка')) {
+                            // Извлекаем сообщения об ошибках из HTML
+                            const tempDiv = document.createElement('div');
+                            tempDiv.innerHTML = text;
+                            
+                            // Ищем элементы с ошибками
+                            const errorElements = tempDiv.querySelectorAll('.alert-danger, .error, [class*="error"]');
+                            let serverErrors = [];
+                            
+                            errorElements.forEach(el => {
+                                if (el.textContent && el.textContent.trim()) {
+                                    serverErrors.push(el.textContent.trim());
+                                }
+                            });
+                            
+                            if (serverErrors.length > 0) {
+                                alert('Ошибки сервера:\n\n' + serverErrors.join('\n'));
+                            } else {
+                                alert('Произошла ошибка при отправке формы. Пожалуйста, проверьте введенные данные.');
                             }
-                        });
-                    } else {
-                        // Если это не JSON, пробуем получить текст
-                        return response.text().then(text => {
-                            console.log('Не-JSON ответ:', text.substring(0, 200));
-                            alert('Сервер вернул неожиданный ответ. Пожалуйста, попробуйте снова.');
-                        });
+                        } else if (text.includes('успех') || text.includes('Успешно') || text.includes('success')) {
+                            // Если в HTML есть указание на успех
+                            alert('✅ Заказ успешно опубликован!');
+                            setTimeout(() => {
+                                window.location.href = '/';
+                            }, 1500);
+                        } else {
+                            // Если не можем определить, просто показываем общее сообщение
+                            console.log('HTML ответ от сервера:', text.substring(0, 500));
+                            alert('Заказ отправлен на обработку. Пожалуйста, подождите...');
+                            // Обновляем страницу через 2 секунды
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 2000);
+                        }
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
-                    alert('Ошибка при публикации заказа. Проверьте подключение к интернету.');
+                    if (error !== 'redirected') {
+                        console.error('Error:', error);
+                        alert('Ошибка при публикации заказа. Проверьте подключение к интернету.');
+                    }
                 })
                 .finally(() => {
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.disabled = false;
+                    // Восстанавливаем кнопку только если не было редиректа
+                    if (submitBtn.disabled) {
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    }
                 });
             });
         }
