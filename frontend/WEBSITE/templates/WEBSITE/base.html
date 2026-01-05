@@ -1,0 +1,193 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Халтурка.ру - Фриланс площадка{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'WEBSITE/css/base.css' %}">
+    {% block extra_css %}{% endblock %}
+    <script>
+        // Глобальные переменные для JavaScript
+        window.appConfig = {
+            staticUrl: "{% static '' %}",
+            apiBase: "/api/",
+            isAuthenticated: {{ request.session.is_authenticated|default:False|lower }},
+            userId: {{ request.session.user_id|default:0 }}
+        };
+    </script>
+</head>
+<body>
+    <!-- Шапка -->
+    <header class="header" id="mainHeader">
+        <div class="container">
+            <a href="{% url 'index' %}" class="logo">
+                <i class="fas fa-hammer"></i>
+                <span>Халтурка.ру</span>
+            </a>
+            
+            <!-- Поиск в шапке -->
+            <div class="header-search">
+                <form action="{% url 'search_orders' %}" method="GET" class="search-form">
+                    <input type="text" name="q" placeholder="Поиск заказов..." class="search-input-sm">
+                    <button type="submit" class="search-btn-sm">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Кнопка мобильного меню -->
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <!-- Навигация -->
+            <nav class="main-nav" id="mainNav">
+                <a href="{% url 'index' %}" class="nav-link {% if request.path == '/' %}active{% endif %}">
+                    <span class="nav-text">
+                        <i class="fas fa-home"></i> Главная
+                    </span>
+                </a>
+                
+                {% if request.session.is_authenticated %}
+                    <a href="{% url 'personal_account_view' %}" class="nav-link {% if '/personal_account/' in request.path %}active{% endif %}">
+                        <span class="nav-text">
+                            <i class="fas fa-user-circle"></i> Личный кабинет
+                            {% if request.session.user_name %}
+                            <span class="user-name-sm">{{ request.session.user_name|truncatechars:10 }}</span>
+                            {% endif %}
+                        </span>
+                    </a>
+                    <a href="{% url 'add_order_view' %}" class="nav-link nav-btn">
+                        <span class="nav-text">
+                            <i class="fas fa-plus"></i> Добавить заказ
+                        </span>
+                    </a>
+                    <a href="{% url 'logout_view' %}" class="nav-link">
+                        <span class="nav-text">
+                            <i class="fas fa-sign-out-alt"></i> Выйти
+                        </span>
+                    </a>
+                {% else %}
+                    <a href="{% url 'auth_view' %}" class="nav-link {% if '/auth/' in request.path %}active{% endif %}">
+                        <span class="nav-text">
+                            <i class="fas fa-sign-in-alt"></i> Войти
+                        </span>
+                    </a>
+                    <a href="{% url 'registr_view' %}" class="nav-link nav-btn">
+                        <span class="nav-text">
+                            <i class="fas fa-user-plus"></i> Регистрация
+                        </span>
+                    </a>
+                {% endif %}
+            </nav>
+            
+            <!-- Индикатор пользователя (для десктопа) -->
+            {% if request.session.is_authenticated %}
+            <div class="user-indicator">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-info">
+                    <div class="user-name">{{ request.session.user_name|default:"Пользователь" }}</div>
+                    <div class="user-balance">
+                        <i class="fas fa-wallet"></i> 
+                        {{ user.balance|default:0|floatformat:0 }} ₽
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </header>
+
+    <!-- Уведомления -->
+    {% if messages %}
+    <div class="notifications-container">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }}">
+            <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+            {{ message|safe }}
+            <button class="alert-close"><i class="fas fa-times"></i></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Основной контент -->
+    <main class="container main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Подвал -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <h3><i class="fas fa-hammer"></i> Халтурка.ру</h3>
+                    <p>Площадка для поиска исполнителей и заказчиков. Безопасные сделки, проверенные исполнители.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-vk"></i></a>
+                        <a href="#"><i class="fab fa-telegram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3>Для заказчиков</h3>
+                    <ul>
+                        <li><a href="{% url 'add_order_view' %}">Добавить заказ</a></li>
+                        <li><a href="#">Как это работает</a></li>
+                        <li><a href="#">Тарифы</a></li>
+                        <li><a href="{% url 'offer_view' %}">Правила использования</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Для исполнителей</h3>
+                    <ul>
+                        <li><a href="{% url 'search_orders' %}">Найти заказ</a></li>
+                        <li><a href="#">Как зарабатывать</a></li>
+                        <li><a href="#">Вывод средств</a></li>
+                        <li><a href="#">Рейтинг исполнителей</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Контакты</h3>
+                    <ul>
+                        <li><a href="mailto:support@халтурка.ру"><i class="fas fa-envelope"></i> support@халтурка.ру</a></li>
+                        <li><a href="tel:+79991234567"><i class="fas fa-phone"></i> +7 (999) 123-45-67</a></li>
+                        <li><a href="#"><i class="fas fa-map-marker-alt"></i> Москва, ул. Примерная, 1</a></li>
+                        <li><a href="{% url 'privacy_view' %}">Политика конфиденциальности</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© {% now "Y" %} Халтурка.ру - площадка для заказов и услуг. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Общие скрипты -->
+    <script src="{% static 'WEBSITE/js/base.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+    
+    <!-- Инициализация при загрузке -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Закрытие уведомлений
+            document.querySelectorAll('.alert-close').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.closest('.alert').style.display = 'none';
+                });
+            });
+            
+            // Автоматическое скрытие уведомлений через 5 секунд
+            setTimeout(() => {
+                document.querySelectorAll('.alert').forEach(alert => {
+                    alert.style.opacity = '0';
+                    setTimeout(() => alert.style.display = 'none', 300);
+                });
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

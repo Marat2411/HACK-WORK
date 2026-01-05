@@ -1,0 +1,143 @@
+{% extends "WEBSITE/base.html" %}
+{% load static %}
+
+{% block title %}Добавить заказ | Халтурка.ру{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'WEBSITE/css/add_order.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="add-order-page">
+    <h1>Добавить новый заказ</h1>
+    <p class="page-description">Заполните информацию о вашем задании, чтобы найти исполнителя</p>
+
+    <!-- Форма добавления заказа -->
+    <form class="add-order-form" id="orderForm" method="POST">
+        {% csrf_token %}
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label" for="orderTitle">
+                    <i class="fas fa-heading"></i> Название заказа *
+                </label>
+                <input type="text" id="orderTitle" name="title" class="form-control" placeholder="Например: Ремонт ноутбука" required minlength="5">
+                <div class="form-hint">
+                    <i class="fas fa-info-circle"></i> Коротко и понятно опишите задание
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="orderCategory">
+                    <i class="fas fa-tag"></i> Категория *
+                </label>
+                <select id="orderCategory" name="category" class="form-control" required>
+                    <option value="">Выберите категорию</option>
+                    <option value="1">Ремонт техники</option>
+                    <option value="2">Дизайн</option>
+                    <option value="3">Программирование</option>
+                    <option value="4">Ремонт и строительство</option>
+                    <option value="5">Уборка</option>
+                    <option value="6">Репетиторство</option>
+                    <option value="7">Красота и здоровье</option>
+                    <option value="8">Грузоперевозки</option>
+                    <option value="9">Другое</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label" for="orderDescription">
+                <i class="fas fa-file-alt"></i> Подробное описание *
+            </label>
+            <textarea id="orderDescription" name="description" class="form-control" 
+                      placeholder="Опишите задание максимально подробно: что нужно сделать, какие требования, сроки и т.д." 
+                      required minlength="20"></textarea>
+            <div class="form-hint">
+                <i class="fas fa-lightbulb"></i> Чем подробнее описание, тем быстрее найдется исполнитель
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label" for="orderBudget">
+                    <i class="fas fa-ruble-sign"></i> Бюджет *
+                </label>
+                <input type="number" id="orderBudget" name="budget" class="form-control" 
+                       placeholder="5000" min="100" step="100" required>
+                <div class="form-hint">
+                    <i class="fas fa-wallet"></i> Укажите сумму в рублях (мин. 100 ₽)
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="orderLocation">
+                    <i class="fas fa-map-marker-alt"></i> Местоположение *
+                </label>
+                <input type="text" id="orderLocation" name="location" class="form-control" 
+                       placeholder="Москва, Центральный район" required>
+                <div class="form-hint">
+                    <i class="fas fa-location-arrow"></i> Где нужно выполнить работу?
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label" for="orderDeadline">
+                    <i class="far fa-calendar-alt"></i> Срок выполнения *
+                </label>
+                <input type="date" id="orderDeadline" name="deadline" class="form-control" required>
+                <div class="form-hint">
+                    <i class="far fa-clock"></i> Когда нужно завершить работу?
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="orderPhone">
+                    <i class="fas fa-phone"></i> Контактный телефон *
+                </label>
+                <input type="tel" id="orderPhone" name="phone" class="form-control" 
+                       placeholder="+7 (999) 123-45-67" required>
+                <div class="form-hint">
+                    <i class="fas fa-user-secret"></i> Только для связи с исполнителем
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">
+                <i class="fas fa-image"></i> Изображение (опционально)
+            </label>
+            <div class="file-upload-area" id="fileUploadArea">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>Нажмите для загрузки изображения</p>
+                <p class="file-hint">JPG, PNG до 5MB</p>
+            </div>
+            <input type="file" id="imageInput" accept="image/*" style="display: none;">
+            <div class="file-preview" id="imagePreview" style="display: none;">
+                <img id="previewImage" src="" alt="Предпросмотр">
+                <button type="button" class="btn btn-danger remove-image-btn">
+                    <i class="fas fa-trash"></i> Удалить
+                </button>
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <button type="button" class="btn btn-secondary" id="backBtn">
+                <i class="fas fa-arrow-left"></i> Назад
+            </button>
+            <button type="button" class="btn btn-danger" id="cancelBtn">
+                <i class="fas fa-times"></i> Отмена
+            </button>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-check"></i> Опубликовать заказ
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'WEBSITE/js/add_order.js' %}"></script>
+{% endblock %}

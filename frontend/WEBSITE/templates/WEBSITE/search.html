@@ -1,0 +1,204 @@
+{% extends "WEBSITE/base.html" %}
+{% load static %}
+
+{% block title %}Поиск заказов | Халтурка.ру{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'WEBSITE/css/search.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="search-page">
+    <h1>Поиск заказов</h1>
+    
+    <!-- Фильтры -->
+    <div class="search-filters">
+        <form action="{% url 'search_orders' %}" method="GET" id="searchForm">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label><i class="fas fa-search"></i> Ключевые слова</label>
+                    <input type="text" name="q" value="{{ search_query|default:'' }}" placeholder="Что нужно сделать?" class="filter-input">
+                </div>
+                
+                <div class="filter-group">
+                    <label><i class="fas fa-tag"></i> Категория</label>
+                    <select name="category" class="filter-select">
+                        <option value="">Все категории</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}" {% if filters.category == category.id|stringformat:"i" %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label><i class="fas fa-map-marker-alt"></i> Город</label>
+                    <input type="text" name="city" value="{{ filters.city|default:'' }}" placeholder="Например: Москва" class="filter-input">
+                </div>
+            </div>
+            
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label><i class="fas fa-ruble-sign"></i> Бюджет от</label>
+                    <input type="number" name="min_price" value="{{ filters.min_price|default:'' }}" placeholder="0" class="filter-input" min="0">
+                </div>
+                
+                <div class="filter-group">
+                    <label><i class="fas fa-ruble-sign"></i> Бюджет до</label>
+                    <input type="number" name="max_price" value="{{ filters.max_price|default:'' }}" placeholder="100000" class="filter-input" min="0">
+                </div>
+                
+                <div class="filter-group">
+                    <button type="submit" class="btn btn-primary filter-btn">
+                        <i class="fas fa-filter"></i> Применить фильтры
+                    </button>
+                    <a href="{% url 'search_orders' %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Сбросить
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Результаты -->
+    <div class="search-results">
+        <div class="results-header">
+            <h2>Найдено заказов: {{ stats.found }}</h2>
+            <div class="results-sort">
+                <span>Сортировка:</span>
+                <select class="sort-select">
+                    <option value="relevance">По релевантности</option>
+                    <option value="price_high">Дорогие сначала</option>
+                    <option value="price_low">Дешевые сначала</option>
+                    <option value="new">Новые сначала</option>
+                </select>
+            </div>
+        </div>
+        
+        {% if orders %}
+        <div class="orders-grid">
+            {% for order in orders %}
+            <div class="order-card">
+                <div class="order-image">
+                    <img src="{{ order.image_url }}" alt="{{ order.title }}" loading="lazy">
+                    {% if order.responses_count > 0 %}
+                    <div class="responses-badge">
+                        <i class="fas fa-users"></i> {{ order.responses_count }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="order-details">
+                    <div class="order-header">
+                        <h3 class="order-title">{{ order.title }}</h3>
+                        <div class="order-price">{{ order.price|floatformat:0 }} ₽</div>
+                    </div>
+                    <p class="order-description">
+                        {{ order.description|truncatechars:150 }}
+                    </p>
+                    <div class="order-meta">
+                        <span class="category-badge">{{ order.category }}</span>
+                        <span><i class="fas fa-map-marker-alt"></i> {{ order.location }}</span>
+                        <span><i class="far fa-calendar-alt"></i> {{ order.created_at }}</span>
+                    </div>
+                    <div class="order-footer">
+                        <a href="{% url 'order_view' order.id %}" class="btn btn-primary">
+                            <i class="fas fa-eye"></i> Подробнее
+                        </a>
+                        {% if user and user.id != order.customer_id %}
+                        <button class="btn btn-success respond-btn" data-order-id="{{ order.id }}">
+                            <i class="fas fa-handshake"></i> Откликнуться
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if stats.found > 12 %}
+        <div class="pagination">
+            <button class="pagination-btn active">1</button>
+            <button class="pagination-btn">2</button>
+            <button class="pagination-btn">3</button>
+            <span class="pagination-dots">...</span>
+            <button class="pagination-btn">10</button>
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <div class="no-results">
+            <i class="fas fa-search"></i>
+            <h3>По вашему запросу ничего не найдено</h3>
+            <p>Попробуйте изменить параметры поиска или <a href="{% url 'add_order_view' %}">создать свой заказ</a>.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'WEBSITE/js/search.js' %}"></script>
+<script>
+    // Обработка откликов на заказы
+    document.querySelectorAll('.respond-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const orderId = this.getAttribute('data-order-id');
+            
+            if (!window.appConfig.isAuthenticated) {
+                alert('Для отклика необходимо войти в систему');
+                window.location.href = "{% url 'auth_view' %}";
+                return;
+            }
+            
+            // Отправка запроса на сервер
+            fetch(`/order/${orderId}/respond/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    this.innerHTML = '<i class="fas fa-check"></i> Отклик отправлен';
+                    this.classList.remove('btn-success');
+                    this.classList.add('btn-secondary');
+                    this.disabled = true;
+                    
+                    // Обновляем счетчик откликов
+                    const badge = document.querySelector(`[data-order-id="${orderId}"]`).closest('.order-card').querySelector('.responses-badge');
+                    if (badge) {
+                        const currentCount = parseInt(badge.textContent.match(/\d+/)[0]);
+                        badge.innerHTML = `<i class="fas fa-users"></i> ${currentCount + 1}`;
+                    }
+                    
+                    alert(data.message);
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                alert('Ошибка при отправке отклика');
+            });
+        });
+    });
+    
+    // Вспомогательная функция для получения CSRF токена
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}

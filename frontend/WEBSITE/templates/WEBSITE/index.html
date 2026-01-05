@@ -1,0 +1,221 @@
+{% extends "WEBSITE/base.html" %}
+{% load static %}
+
+{% block title %}Свежие заказы | Халтурка.ру{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'WEBSITE/css/index.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1>Найдите исполнителя для любой задачи</h1>
+            <p class="hero-description">Более {{ stats.total_orders }} заказов ждут своего исполнителя. Средний бюджет: {{ stats.average_price }} ₽</p>
+            
+            <div class="search-box">
+                <form action="{% url 'search_orders' %}" method="GET">
+                    <div class="search-input-group">
+                        <input type="text" name="q" placeholder="Например: ремонт ноутбука" class="search-input">
+                        <button type="submit" class="search-btn">
+                            <i class="fas fa-search"></i> Найти
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Быстрый доступ к категориям -->
+    <div class="categories-section">
+        <h2>Популярные категории</h2>
+        <div class="categories-grid">
+            {% for category in categories|slice:":8" %}
+            <a href="{% url 'search_orders' %}?category={{ category.id }}" class="category-card">
+                <div class="category-icon">
+                    <i class="{{ category.icon }}"></i>
+                </div>
+                <h3>{{ category.name }}</h3>
+                <p class="category-count">{{ category.order_count|default:"100+" }} заказов</p>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Кнопка добавить заказ -->
+    <div class="add-order-container">
+        {% if user %}
+        <button class="add-order-btn" id="addOrderBtn">
+            <i class="fas fa-plus-circle"></i> <span>Добавить заказ</span>
+        </button>
+        {% else %}
+        <a href="{% url 'auth_view' %}" class="add-order-btn">
+            <i class="fas fa-sign-in-alt"></i> <span>Войдите, чтобы добавить заказ</span>
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Заказы в топе -->
+    {% if featured_orders %}
+    <div class="featured-section">
+        <h2><i class="fas fa-fire"></i> Заказы в топе</h2>
+        <div class="orders-grid featured">
+            {% for order in featured_orders %}
+            <div class="order-card featured-card">
+                <div class="order-image">
+                    <img src="{{ order.image_url }}" alt="{{ order.title }}" loading="lazy">
+                    <div class="featured-badge">
+                        <i class="fas fa-crown"></i> Топ заказ
+                    </div>
+                </div>
+                <div class="order-details">
+                    <div class="order-header">
+                        <h3 class="order-title">{{ order.title }}</h3>
+                        <div class="order-price">{{ order.price|floatformat:0 }} ₽</div>
+                    </div>
+                    <p class="order-description">
+                        {{ order.description|truncatechars:100 }}
+                    </p>
+                    <div class="order-meta">
+                        <span><i class="fas fa-tag"></i> {{ order.category }}</span>
+                        <span><i class="fas fa-map-marker-alt"></i> {{ order.location }}</span>
+                        <span><i class="far fa-calendar-alt"></i> {{ order.created_at }}</span>
+                    </div>
+                    <div class="order-footer">
+                        <div class="order-responses">
+                            <i class="fas fa-users"></i> {{ order.responses_count }} откликов
+                        </div>
+                        <button class="btn btn-primary order-button" data-order-id="{{ order.id }}">
+                            Подробнее
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Все заказы -->
+    <div class="orders-section">
+        <div class="section-header">
+            <h2>Свежие заказы</h2>
+            <div class="sort-options">
+                <select id="sortSelect" class="sort-select">
+                    <option value="new">Сначала новые</option>
+                    <option value="price_high">Дорогие</option>
+                    <option value="price_low">Дешевые</option>
+                    <option value="deadline">Срочные</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="orders-grid" id="ordersGrid">
+            {% for order in orders %}
+            {% if not order.featured %}
+            <div class="order-card" data-price="{{ order.price }}" data-date="{{ order.created_at }}" data-deadline="{{ order.deadline }}">
+                <div class="order-image">
+                    <img src="{{ order.image_url }}" alt="{{ order.title }}" loading="lazy">
+                    {% if order.responses_count > 5 %}
+                    <div class="popular-badge">
+                        <i class="fas fa-bolt"></i> Популярный
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="order-details">
+                    <div class="order-header">
+                        <h3 class="order-title">{{ order.title }}</h3>
+                        <div class="order-price">{{ order.price|floatformat:0 }} ₽</div>
+                    </div>
+                    <p class="order-description">
+                        {{ order.description|truncatechars:120 }}
+                    </p>
+                    <div class="order-meta">
+                        <span><i class="fas fa-tag"></i> {{ order.category }}</span>
+                        <span><i class="fas fa-map-marker-alt"></i> {{ order.location }}</span>
+                        <span><i class="fas fa-clock"></i> Срок: {{ order.deadline }}</span>
+                    </div>
+                    <div class="order-footer">
+                        <div class="customer-info">
+                            <i class="fas fa-user"></i> {{ order.user.name|truncatechars:20 }}
+                        </div>
+                        <button class="btn btn-primary order-button" data-order-id="{{ order.id }}">
+                            Подробнее
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% empty %}
+            <div class="no-orders">
+                <i class="fas fa-inbox"></i>
+                <h3>Заказов пока нет</h3>
+                <p>Будьте первым, кто разместит заказ!</p>
+                <a href="{% url 'add_order_view' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Добавить заказ
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if orders|length > 12 %}
+        <div class="load-more-container">
+            <button class="btn btn-secondary" id="loadMoreBtn">
+                <i class="fas fa-sync-alt"></i> Показать еще
+            </button>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Преимущества -->
+    <div class="advantages-section">
+        <h2>Почему выбирают Халтурка.ру</h2>
+        <div class="advantages-grid">
+            <div class="advantage-card">
+                <div class="advantage-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Безопасная сделка</h3>
+                <p>Все платежи защищены. Деньги хранятся на сайте до выполнения работы.</p>
+            </div>
+            <div class="advantage-card">
+                <div class="advantage-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3>Проверенные исполнители</h3>
+                <p>Все исполнители проходят проверку и имеют отзывы от других клиентов.</p>
+            </div>
+            <div class="advantage-card">
+                <div class="advantage-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h3>Быстрое выполнение</h3>
+                <p>Среднее время выполнения заказа - 2-3 дня. Есть срочные заказы.</p>
+            </div>
+            <div class="advantage-card">
+                <div class="advantage-icon">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <h3>Поддержка 24/7</h3>
+                <p>Наша служба поддержки всегда готова помочь решить любой вопрос.</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'WEBSITE/js/index.js' %}"></script>
+<script>
+    // Динамические переменные для JavaScript
+    const userAuthenticated = {{ user.id|default:0 }} > 0;
+    const addOrderUrl = "{% url 'add_order_view' %}";
+    const apiOrdersUrl = "{% url 'api_orders' %}";
+    const apiUserUrl = "{% url 'api_user' %}";
+    
+    // Статистика для отображения
+    const stats = {
+        totalOrders: {{ stats.total_orders|default:0 }},
+        averagePrice: {{ stats.average_price|default:0 }}
+    };
+</script>
+{% endblock %}

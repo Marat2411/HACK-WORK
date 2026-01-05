@@ -1,0 +1,82 @@
+services:
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - data_service
+      - photo_service
+      - payment_gateway
+    volumes:
+      - static_volume:/app/staticfiles:ro  # Добавьте эту строку
+      - media_volume:/app/media:ro         # Добавьте эту строку
+      - ./frontend/WEBSITE/static:/app/WEBSITE/static:ro  # Добавьте эту строку
+    networks:
+      - hackwork-network
+
+  frontend:
+    build: ./frontend
+    expose:
+      - "8000"
+    environment:
+      - DATABASE_SERVICE_URL=http://data_service:8001
+      - PHOTO_SERVICE_URL=http://photo_service:8002
+      - PAYMENT_SERVICE_URL=http://payment_gateway:8003
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=${SECRET_KEY:-django-insecure-default-key}
+      - DEBUG=${DEBUG:-True}
+    depends_on:
+      - data_service
+      - redis
+    volumes:
+      - ./frontend:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    networks:
+      - hackwork-network
+
+  data_service:
+    build: ./data_service
+    ports:
+      - "8001:8001"
+    volumes:
+      - data_volume:/app/data
+    environment:
+      - DATA_FILE_PATH=/app/data/database.json
+    networks:
+      - hackwork-network
+
+  redis:
+    build: ./redis
+    ports:
+      - "6379:6379"
+    networks:
+      - hackwork-network
+
+  photo_service:
+    build: ./photo_service
+    ports:
+      - "8002:8002"
+    environment:
+      - BUCKET=${BUCKET:-test-bucket}
+    networks:
+      - hackwork-network
+    restart: unless-stopped  # Добавьте эту строку
+
+  payment_gateway:
+    build: ./payment_gateway
+    ports:
+      - "8003:8003"
+    networks:
+      - hackwork-network
+    restart: unless-stopped  # Добавьте эту строку
+
+networks:
+  hackwork-network:
+    driver: bridge
+
+volumes:
+  data_volume:
+  static_volume:
+  media_volume:

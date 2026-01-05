@@ -1,0 +1,252 @@
+{% extends "WEBSITE/base.html" %}
+{% load static %}
+
+{% block title %}Поиск заказов | Халтурка.ру{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'WEBSITE/css/search.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="search-page">
+    <h1>Поиск заказов</h1>
+    
+    <div class="search-container">
+        <div class="search-sidebar">
+            <div class="filter-card">
+                <h3><i class="fas fa-filter"></i> Фильтры</h3>
+                
+                <div class="filter-group">
+                    <label>Категория</label>
+                    <select class="filter-select" id="categoryFilter">
+                        <option value="">Все категории</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Бюджет</label>
+                    <div class="price-range">
+                        <input type="number" id="minPrice" placeholder="Мин" min="0">
+                        <span>-</span>
+                        <input type="number" id="maxPrice" placeholder="Макс" min="0">
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Город</label>
+                    <input type="text" id="cityFilter" placeholder="Например: Москва">
+                </div>
+                
+                <div class="filter-group">
+                    <label>Сортировка</label>
+                    <select class="filter-select" id="sortFilter">
+                        <option value="new">Сначала новые</option>
+                        <option value="price_high">Дорогие</option>
+                        <option value="price_low">Дешевые</option>
+                        <option value="responses">По откликам</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-primary" id="applyFilters">Применить</button>
+                <button class="btn btn-secondary" id="resetFilters">Сбросить</button>
+            </div>
+        </div>
+        
+        <div class="search-results">
+            <div class="results-header">
+                <h2>Найдено заказов: <span id="resultsCount">{{ orders|length }}</span></h2>
+                <div class="search-box-sm">
+                    <input type="text" id="searchInput" placeholder="Поиск по названию...">
+                    <button id="searchBtn"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+            
+            <div class="orders-grid" id="ordersGrid">
+                {% for order in orders %}
+                <div class="order-card" data-category="{{ order.category_id }}" data-price="{{ order.price }}" data-city="{{ order.location }}">
+                    <div class="order-image">
+                        <img src="{{ order.image_url }}" alt="{{ order.title }}" loading="lazy">
+                        {% if order.featured %}
+                        <div class="featured-badge">
+                            <i class="fas fa-fire"></i> В ТОПЕ
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="order-details">
+                        <div class="order-header">
+                            <h3 class="order-title">{{ order.title }}</h3>
+                            <div class="order-price">{{ order.price|floatformat:0 }} ₽</div>
+                        </div>
+                        <p class="order-description">
+                            {{ order.description|truncatechars:120 }}
+                        </p>
+                        <div class="order-meta">
+                            <span class="category-tag">{{ order.category }}</span>
+                            <span><i class="fas fa-map-marker-alt"></i> {{ order.location }}</span>
+                            <span><i class="far fa-calendar-alt"></i> {{ order.created_at }}</span>
+                        </div>
+                        <div class="order-footer">
+                            <div class="order-stats">
+                                <span class="responses-count">
+                                    <i class="fas fa-users"></i> {{ order.responses_count }} откликов
+                                </span>
+                                <span class="deadline">
+                                    <i class="fas fa-clock"></i> до {{ order.deadline }}
+                                </span>
+                            </div>
+                            <a href="{% url 'order_view' order.id %}" class="btn btn-primary">
+                                <i class="fas fa-eye"></i> Подробнее
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="no-results">
+                    <i class="fas fa-search"></i>
+                    <h3>Заказов не найдено</h3>
+                    <p>Попробуйте изменить параметры поиска</p>
+                </div>
+                {% endfor %}
+            </div>
+            
+            {% if orders|length >= 10 %}
+            <div class="load-more">
+                <button class="btn btn-secondary" id="loadMore">
+                    <i class="fas fa-arrow-down"></i> Показать еще
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'WEBSITE/js/search.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Фильтрация заказов
+        const applyFiltersBtn = document.getElementById('applyFilters');
+        const resetFiltersBtn = document.getElementById('resetFilters');
+        const searchBtn = document.getElementById('searchBtn');
+        const searchInput = document.getElementById('searchInput');
+        const loadMoreBtn = document.getElementById('loadMore');
+        
+        let allOrders = [];
+        
+        // Собираем данные о заказах
+        document.querySelectorAll('.order-card').forEach(card => {
+            allOrders.push({
+                element: card,
+                title: card.querySelector('.order-title').textContent.toLowerCase(),
+                category: card.getAttribute('data-category'),
+                price: parseInt(card.getAttribute('data-price')),
+                city: card.getAttribute('data-city').toLowerCase()
+            });
+        });
+        
+        function applyFilters() {
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const minPrice = parseInt(document.getElementById('minPrice').value) || 0;
+            const maxPrice = parseInt(document.getElementById('maxPrice').value) || Infinity;
+            const cityFilter = document.getElementById('cityFilter').value.toLowerCase();
+            const searchText = searchInput.value.toLowerCase();
+            const sortFilter = document.getElementById('sortFilter').value;
+            
+            let filteredOrders = allOrders.filter(order => {
+                // Проверка категории
+                if (categoryFilter && order.category !== categoryFilter) return false;
+                
+                // Проверка цены
+                if (order.price < minPrice || order.price > maxPrice) return false;
+                
+                // Проверка города
+                if (cityFilter && !order.city.includes(cityFilter)) return false;
+                
+                // Проверка поискового запроса
+                if (searchText && !order.title.includes(searchText)) return false;
+                
+                return true;
+            });
+            
+            // Сортировка
+            filteredOrders.sort((a, b) => {
+                switch(sortFilter) {
+                    case 'price_high':
+                        return b.price - a.price;
+                    case 'price_low':
+                        return a.price - b.price;
+                    case 'responses':
+                        // Здесь нужно добавить логику сортировки по откликам
+                        return 0;
+                    default:
+                        return 0;
+                }
+            });
+            
+            // Показываем/скрываем заказы
+            allOrders.forEach(order => {
+                order.element.style.display = 'none';
+            });
+            
+            filteredOrders.forEach(order => {
+                order.element.style.display = 'block';
+            });
+            
+            // Обновляем счетчик
+            document.getElementById('resultsCount').textContent = filteredOrders.length;
+            
+            // Показываем/скрываем кнопку "Показать еще"
+            if (loadMoreBtn) {
+                loadMoreBtn.style.display = filteredOrders.length > 10 ? 'block' : 'none';
+            }
+        }
+        
+        function resetFilters() {
+            document.getElementById('categoryFilter').value = '';
+            document.getElementById('minPrice').value = '';
+            document.getElementById('maxPrice').value = '';
+            document.getElementById('cityFilter').value = '';
+            document.getElementById('sortFilter').value = 'new';
+            searchInput.value = '';
+            
+            allOrders.forEach(order => {
+                order.element.style.display = 'block';
+            });
+            
+            document.getElementById('resultsCount').textContent = allOrders.length;
+        }
+        
+        // Обработчики событий
+        if (applyFiltersBtn) {
+            applyFiltersBtn.addEventListener('click', applyFilters);
+        }
+        
+        if (resetFiltersBtn) {
+            resetFiltersBtn.addEventListener('click', resetFilters);
+        }
+        
+        if (searchBtn) {
+            searchBtn.addEventListener('click', applyFilters);
+        }
+        
+        if (searchInput) {
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    applyFilters();
+                }
+            });
+        }
+        
+        if (loadMoreBtn) {
+            loadMoreBtn.addEventListener('click', function() {
+                // Здесь можно добавить загрузку дополнительных заказов с сервера
+                alert('В реальном проекте здесь будет загрузка дополнительных заказов с сервера');
+            });
+        }
+    });
+</script>
+{% endblock %}
